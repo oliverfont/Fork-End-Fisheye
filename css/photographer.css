@@ -1,3 +1,57 @@
+
+body {
+    font-family: "DM Sans", sans-serif;
+    margin: 0;
+}
+
+
+header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    height: 90px;
+}
+
+h1 {
+    color: main-color;
+    margin-right: 100px;
+}
+
+h2 {
+    color: #D3573C;
+    font-size: 36px;
+    font-family: DM Sans;
+    margin: 5px;
+}
+
+p {
+    margin: 2px;
+    font-size: 10px;
+}
+
+a {
+    text-decoration: none;
+    justify-self: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    color: black;
+}
+
+.logo {
+    height: 50px;
+    margin-left: 100px;
+}
+
+.photographer_section {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 70px;
+    margin-top: 100px;
+}
+
 #contact_modal {
     display: none;
 }
@@ -6,6 +60,9 @@
     background-color: #FAFAFA;
     height: 300px;
     margin: 0 100px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .contact_button {
@@ -19,6 +76,7 @@
     background-color: #901C1C;
     border-radius: 5px;
     cursor: pointer;
+    order: 2;
 }
 
 .modal {
@@ -73,4 +131,12 @@ form input {
     height: 68px;
     border: none;
     border-radius: 5px;
+}
+
+.photo {
+    height: 200px;
+    width: 200px;
+    border-radius: 50%;
+    object-fit: cover;
+    order: 5;
 }
