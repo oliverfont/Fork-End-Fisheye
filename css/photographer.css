@@ -20,14 +20,17 @@ h1 {
 
 h2 {
     color: #D3573C;
-    font-size: 36px;
-    font-family: DM Sans;
-    margin: 5px;
+    font-size: 62px;
+    font-family: "DM Sans", sans-serif;
+    margin: 0 0 15px 30px;
+    font-weight: normal;
 }
 
 p {
     margin: 2px;
-    font-size: 10px;
+    margin: 0 0 15px 30px;
+    color: #525252;
+    font-size: 18px;
 }
 
 a {
@@ -40,9 +43,19 @@ a {
     color: black;
 }
 
+a img {
+    display: block;
+}
+
 .logo {
     height: 50px;
     margin-left: 100px;
+}
+
+.gallery-img {
+    width: 350px;
+    height: 350px;
+    object-fit: cover;
 }
 
 .photographer_section {
@@ -140,3 +153,21 @@ form input {
     object-fit: cover;
     order: 5;
 }
+
+.location {
+    color: #901C1C;
+    font-size: 24px;
+    font-family: "DM Sans", sans-serif;
+}
+
+#imageGallery {
+    display: flex;
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin: 8px;
+    flex-wrap: wrap;
+    gap: 30px;
+    justify-content: center;
+  }
+
