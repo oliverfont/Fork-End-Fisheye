@@ -26,7 +26,7 @@ function photographerTemplate(data) {
         pLocation.setAttribute('class', "location")
 
         const pPrice = document.createElement('p');
-        pPrice.textContent = `${price}/jour`;
+        pPrice.textContent = `${price}€/jour`;
         pPrice.setAttribute('class', "price")
         
         article.appendChild(a)
