@@ -27,5 +27,35 @@ function closeLightbox() {
     }
 }
 
-// Appeler cette fonction pour ouvrir la lightbox
-// Par exemple, dans votre code existant, vous pouvez remplacer l'appel à Fancybox par cette fonction.
+
+document.addEventListener('DOMContentLoaded', function () {
+    const lightbox = document.getElementById('customLightbox');
+    const lightboxImg = document.getElementById('lightboxImg');
+    const closeBtn = document.querySelector('.close');
+    const triggerImages = document.querySelectorAll('.custom-lightbox-trigger');
+
+    // Fonction pour afficher la modal avec l'image cliquée
+    function openLightbox(imageSrc) {
+        lightboxImg.src = imageSrc;
+        lightbox.style.display = 'block';
+    }
+
+    // Fermer la modal en cliquant sur le bouton de fermeture
+    closeBtn.addEventListener('click', function () {
+        lightbox.style.display = 'none';
+    });
+
+    // Fermer la modal en cliquant à l'extérieur de la modal
+    window.addEventListener('click', function (event) {
+        if (event.target === lightbox) {
+            lightbox.style.display = 'none';
+        }
+    });
+
+    // Attacher l'événement de clic à chaque image déclencheur
+    triggerImages.forEach(function (image) {
+        image.addEventListener('click', function () {
+            openLightbox(image.src);
+        });
+    });
+});

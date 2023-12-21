@@ -43,7 +43,6 @@ document.addEventListener('DOMContentLoaded', async function () {
         createClickableImageElement() {
             const linkElement = document.createElement('a');
             linkElement.href = this.file;
-            linkElement.dataset.fancybox = 'gallery'; // Ajoute l'attribut pour regrouper les images dans un carrousel
 
             if (this.isVideo()) {
                 // Si c'est une vidéo, crée une miniature à partir de la première image
@@ -170,10 +169,19 @@ document.addEventListener('DOMContentLoaded', async function () {
                 .filter(href => /\.(jpg|jpeg|png|mp4)$/i.test(href)); // Filtre par extensions
     
             // Parcourir la liste des fichiers et créer des instances de Media
-            fichiers.forEach(fichier => {
+            fichiers.forEach((fichier, index) => {
                 const url = new URL(`${fichier}`, cheminDossierImages);
                 const media = mediaFactory.createMedia(url.href);
                 const clickableImage = media.createClickableImageElement();
+            
+                // Ajoutez l'événement d'écouteur de clic à chaque lien
+                clickableImage.addEventListener('click', (event) => {
+                    event.preventDefault(); // Empêcher le comportement de lien par défaut
+                    const mediaUrl = media.file;
+                    openLightbox(mediaUrl);
+                    currentImageIndex = index; // Gardez une trace de l'index de l'image actuelle
+                });
+
                 galerie.appendChild(clickableImage);
             });
     
@@ -181,7 +189,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             const images = document.querySelectorAll('.gallery-img');
             images.forEach(image => {
                 image.addEventListener('click', () => {
-                    const imageUrl = image.src; // Obtenez l'URL de l'image
+                    const imageUrl = image.src;
                     openLightbox(imageUrl);
                 });
             });
@@ -194,3 +202,54 @@ document.addEventListener('DOMContentLoaded', async function () {
     // Appel de la fonction pour charger les médias lors du chargement de la page
     window.onload = chargerMedias;
 });
+
+function openLightbox(imageUrl) {
+    const lightbox = document.getElementById('customLightbox');
+    const lightboxImg = document.getElementById('lightboxImg');
+
+    lightboxImg.src = imageUrl;
+    lightbox.style.display = 'block';
+
+    // Fermer la lightbox en cliquant sur le bouton de fermeture
+    const closeBtn = document.querySelector('.close');
+    closeBtn.addEventListener('click', function () {
+        lightbox.style.display = 'none';
+    });
+
+    // Fermer la lightbox en cliquant à l'extérieur de la lightbox
+    window.addEventListener('click', function (event) {
+        if (event.target === lightbox) {
+            lightbox.style.display = 'none';
+        }
+    });
+}
+
+// Écouteurs d'événements pour la navigation dans la lightbox
+document.addEventListener('keydown', (event) => {
+    // Vérifiez si la lightbox est ouverte
+    if (lightboxIsOpen) {
+        // Touche "Escape" pour fermer la lightbox
+        if (event.key === 'Escape') {
+            closeLightbox();
+        }
+        // Touche "ArrowRight" pour passer à l'image suivante
+        else if (event.key === 'ArrowRight') {
+            navigateLightbox(1);
+        }
+        // Touche "ArrowLeft" pour passer à l'image précédente
+        else if (event.key === 'ArrowLeft') {
+            navigateLightbox(-1);
+        }
+    }
+});
+
+// Fonction pour naviguer dans la lightbox
+function navigateLightbox(direction) {
+    const newIndex = currentImageIndex + direction;
+    // Assurez-vous que le nouvel index est dans la plage valide
+    if (newIndex >= 0 && newIndex < fichiers.length) {
+        const newImageUrl = fichiers[newIndex];
+        openLightbox(newImageUrl);
+        currentImageIndex = newIndex;
+    }
+}
