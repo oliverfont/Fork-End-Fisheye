@@ -202,54 +202,30 @@ document.addEventListener('DOMContentLoaded', async function () {
     // Appel de la fonction pour charger les médias lors du chargement de la page
     window.onload = chargerMedias;
 });
+ 
+// Modal de contact
+const openModal = document.querySelector('.contact_button');
+const modal = document.querySelector('.modal');
+const envoiForm = document.querySelector('.envoiForm')
 
-function openLightbox(imageUrl) {
-    const lightbox = document.getElementById('customLightbox');
-    const lightboxImg = document.getElementById('lightboxImg');
-
-    lightboxImg.src = imageUrl;
-    lightbox.style.display = 'block';
-
-    // Fermer la lightbox en cliquant sur le bouton de fermeture
-    const closeBtn = document.querySelector('.close');
-    closeBtn.addEventListener('click', function () {
-        lightbox.style.display = 'none';
-    });
-
-    // Fermer la lightbox en cliquant à l'extérieur de la lightbox
-    window.addEventListener('click', function (event) {
-        if (event.target === lightbox) {
-            lightbox.style.display = 'none';
-        }
-    });
-}
-
-// Écouteurs d'événements pour la navigation dans la lightbox
-document.addEventListener('keydown', (event) => {
-    // Vérifiez si la lightbox est ouverte
-    if (lightboxIsOpen) {
-        // Touche "Escape" pour fermer la lightbox
-        if (event.key === 'Escape') {
-            closeLightbox();
-        }
-        // Touche "ArrowRight" pour passer à l'image suivante
-        else if (event.key === 'ArrowRight') {
-            navigateLightbox(1);
-        }
-        // Touche "ArrowLeft" pour passer à l'image précédente
-        else if (event.key === 'ArrowLeft') {
-            navigateLightbox(-1);
-        }
-    }
+openModal.addEventListener('click', () => {
+    modal.style.display = 'block';
 });
 
-// Fonction pour naviguer dans la lightbox
-function navigateLightbox(direction) {
-    const newIndex = currentImageIndex + direction;
-    // Assurez-vous que le nouvel index est dans la plage valide
-    if (newIndex >= 0 && newIndex < fichiers.length) {
-        const newImageUrl = fichiers[newIndex];
-        openLightbox(newImageUrl);
-        currentImageIndex = newIndex;
-    }
-}
+const prenom = document.querySelector("#prenom");
+const nom = document.querySelector("#nom");
+const email = document.querySelector("#email");
+const msg = document.querySelector("#msg");
+const form = document.querySelector('#formulaire');
+
+form.addEventListener('submit', finForm);
+
+function finForm(e) {
+    e.preventDefault();
+    console.log(`
+    Prénom : ${prenom.value}
+    Nom : ${nom.value}
+    Email : ${email.value}
+    Message : ${msg.value}`);
+    modal.style.display = 'none'
+    };

@@ -21,10 +21,12 @@
   </main>
 
   <div id="customLightbox">
+    <img class="prev" src="assets/icons/prev.png">
     <div id="lightboxContent">
-        <span class="close">&times;</span>
         <img id="lightboxImg">
     </div>
+    <img class="next" src="assets/icons/next.png">
+    <img src="assets/icons/close.png" class="close">
 </div>
 
 
@@ -34,12 +36,24 @@
         <h2>Contactez-moi</h2>
         <img src="assets/icons/close.svg" onclick="closeModal()" />
       </header>
-      <form>
+      <form id="formulaire" action="photographer.html" method="get">
         <div>
           <label>Prénom</label>
-          <input />
+          <input type="text" name="prenom" id="prenom" aria-labelledby="prenom" aria-describedby="prenom" placeholder="Votre prénom">
         </div>
-        <button class="contact_button">Envoyer</button>
+        <div>
+          <label>Nom</label>
+          <input type="text" name="nom" id="nom" aria-labelledby="nom" aria-describedby="nom" placeholder="Votre nom">
+        </div>
+        <div>
+          <label>Email</label>
+          <input type="email" name="email" id="email" aria-labelledby="email" aria-describedby="email" placeholder="Votre email">
+        </div>
+        <div>
+          <label>Votre message</label>
+          <textarea name="message" id="msg" aria-labelledby="message" aria-describedby="message" placeholder="Votre Message"></textarea>
+        </div>
+        <button type="submit" class="envoiForm">Envoyer</button>
       </form>
     </div>
   </div>
