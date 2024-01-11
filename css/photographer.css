@@ -27,8 +27,6 @@ h2 {
 }
 
 p {
-    margin: 2px;
-    margin: 0 0 15px 30px;
     color: #525252;
     font-size: 18px;
 }
@@ -188,6 +186,7 @@ form textarea {
     color: #901C1C;
     font-size: 24px;
     font-family: "DM Sans", sans-serif;
+    margin: 0 0 15px 30px;
 }
 
 #imageGallery {
@@ -197,6 +196,54 @@ form textarea {
     border-radius: 8px;
     margin: 30px;
     flex-wrap: wrap;
-    gap: 30px;
-    justify-content: center;
+    justify-content: space-between;
   }
+
+  .like-container
+  {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px;
+    }
+
+    .like-button {
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .photo-title {
+        margin-left: 8px;
+        font-size: 14px;
+        color: #555;
+    }
+
+    .photo-container {
+  box-sizing: border-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 20px 70px;
+  max-width: 350px;
+}
+
+.info-container {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.title-container {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.like-count {
+  margin: 0 5px;
+}
+
+.tagline {
+  margin: 0 0 15px 30px;
+}

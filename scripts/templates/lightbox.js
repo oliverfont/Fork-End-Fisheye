@@ -2,70 +2,98 @@ let lightboxIsOpen = false;
 let currentImageIndex = 0;
 let images = [];
 
-// Fonction pour ouvrir la lightbox
-function openLightbox(imageUrl) {
+function openLightbox(mediaUrl, mediaList) {
     const lightbox = document.getElementById('customLightbox');
-    const lightboxImg = document.getElementById('lightboxImg');
+    const lightboxMedia = document.getElementById('lightboxContent');
 
-    lightboxImg.src = imageUrl;
-    lightbox.style.display = 'flex';
-    lightboxIsOpen = true;  // ! mettre à jour la variable lightboxIsOpen
-}
+    if (!lightboxMedia) {
+        console.error("L'élément lightboxMedia n'a pas été trouvé.");
+        return;
+    }
 
-    // Fermer la lightbox en cliquant sur le bouton de fermeture
-    const closeBtn = document.querySelector('.close');
-    closeBtn.addEventListener('click', function () {
-        lightbox.style.display = 'none';
-    });
+    images = mediaList || [];
+    currentImageIndex = images.findIndex(media => media.src === mediaUrl);
 
-    // Fermer la lightbox en cliquant à l'extérieur de la lightbox
-    window.addEventListener('click', function (event) {function openLightbox(imageUrl) {
-        const lightbox = document.getElementById('customLightbox');
-        const lightboxImg = document.getElementById('lightboxImg');
-    
-        lightboxImg.src = imageUrl;
+    if (currentImageIndex >= 0 && currentImageIndex < images.length) {
+        const currentMedia = images[currentImageIndex];
+
+        lightboxMedia.innerHTML = ''; // Nettoyez le contenu précédent de la lightbox
+
+        if (currentMedia.isVideo) {
+            const videoElement = document.createElement('video');
+            videoElement.id = 'lightboxVid'; // Ajout de l'id lightboxVid
+            videoElement.src = currentMedia.src;
+            videoElement.controls = true;
+            videoElement.autoplay = true; // Ajout de l'attribut autoplay pour lancer automatiquement la vidéo
+            lightboxMedia.appendChild(videoElement);
+        } else {
+            const imageElement = document.createElement('img');
+            imageElement.id = 'lightboxImg'; // Ajout de l'id lightboxImg
+            imageElement.src = currentMedia.src;
+            lightboxMedia.appendChild(imageElement);
+        }
+
         lightbox.style.display = 'flex';
-    
-        // Fermer la lightbox en cliquant sur le bouton de fermeture
+        lightboxIsOpen = true;
+
         const closeBtn = document.querySelector('.close');
         closeBtn.addEventListener('click', function () {
             lightbox.style.display = 'none';
+            lightboxIsOpen = false;
         });
-    
-        // Fermer la lightbox en cliquant à l'extérieur de la lightbox
+
         window.addEventListener('click', function (event) {
             if (event.target === lightbox) {
                 lightbox.style.display = 'none';
+                lightboxIsOpen = false;
             }
         });
-    }
-    
-// Écouteurs d'événements pour la navigation dans la lightbox
-document.addEventListener('keydown', (event) => {
-    // Vérifiez si la lightbox est ouverte
-    if (lightboxIsOpen) {
-        // Touche "Escape" pour fermer la lightbox
-        if (event.key === 'Escape') {
-            closeLightbox();
-        }
-        // Touche "ArrowRight" pour passer à l'image suivante
-        else if (event.key === 'ArrowRight') {
+
+        const nextBtn = document.querySelector('.next');
+        nextBtn.addEventListener('click', function () {
             navigateLightbox(1);
-        }
-        // Touche "ArrowLeft" pour passer à l'image précédente
-        else if (event.key === 'ArrowLeft') {
+        });
+
+        const prevBtn = document.querySelector('.prev');
+        prevBtn.addEventListener('click', function () {
+            navigateLightbox(-1);
+        });
+    } else {
+        console.error("Index de média actuel hors limites.");
+    }
+}
+
+function navigateLightbox(direction) {
+    const newIndex = currentImageIndex + direction;
+
+    if (newIndex >= 0 && newIndex < images.length) {
+        openLightbox(images[newIndex].src, images);
+        currentImageIndex = newIndex;
+    } else if (newIndex >= images.length) {
+        // Si l'index dépasse la fin du tableau, revenir au début
+        openLightbox(images[0].src, images);
+        currentImageIndex = 0;
+    } else if (newIndex < 0) {
+        // Si l'index est inférieur à zéro, passer à la dernière image
+        openLightbox(images[images.length - 1].src, images);
+        currentImageIndex = images.length - 1;
+    }
+}
+
+function closeLightbox() {
+    const lightbox = document.getElementById('customLightbox');
+    lightbox.style.display = 'none';
+    lightboxIsOpen = false;
+}
+
+window.addEventListener('keydown', (event) => {
+    if (lightboxIsOpen) {
+        if (event.key === 'Escape') {
+            closeLightbox()
+        } else if (event.key === 'ArrowRight') {
+            navigateLightbox(1);
+        } else if (event.key === 'ArrowLeft') {
             navigateLightbox(-1);
         }
     }
 });
-
-// Fonction pour naviguer dans la lightbox
-function navigateLightbox(direction) {
-    const newIndex = currentImageIndex + direction;
-    // Assurez-vous que le nouvel index est dans la plage valide
-    if (newIndex >= 0 && newIndex < images.length) {
-        const newImageUrl = images[newIndex].src;
-        openLightbox(newImageUrl);
-        currentImageIndex = newIndex;
-    }
-}

@@ -157,119 +157,42 @@ document.addEventListener('DOMContentLoaded', async function () {
             fichiers.forEach((fichier, index) => {
                 const url = new URL(`${fichier}`, cheminDossierImages);
                 const media = mediaFactory.createMedia(url.href);
-                const container = document.createElement('div');
-                container.classList.add('photo-container');
-
-                // Ajout du titre sous chaque image
-                const pathParts = url.pathname.split('/');
-                const lastPathPart = pathParts[pathParts.length - 1];
-                const fileNameWithoutExtension = lastPathPart.split('.')[0];
-                const formattedTitle = fileNameWithoutExtension.replace(/_/g, ' ');
-
-                const titleContainer = document.createElement('div');
-                titleContainer.classList.add('title-container');
-
-                const titleElement = document.createElement('p');
-                titleElement.classList.add('media-title');
-                titleElement.innerText = formattedTitle;
-
-                titleContainer.appendChild(titleElement);
-
-                container.appendChild(titleContainer);
-
                 const clickableImage = media.createClickableImageElement();
+            
+                // Ajoutez les éléments de likes et de titre sous chaque photo
+                const likeContainer = document.createElement('div');
+                likeContainer.classList.add('like-container');
+            
+                const likeBtn = document.createElement('div');
+                likeBtn.classList.add('like-button');
+                likeBtn.innerText = '0 Likes';
+            
+                const titleElement = document.createElement('div');
+                titleElement.classList.add('photo-title');
+                titleElement.innerText = 'Titre de la photo'; // Remplacez par le titre de votre photo
+            
+                likeContainer.appendChild(likeBtn);
+                likeContainer.appendChild(titleElement);
+            
+                clickableImage.appendChild(likeContainer);
+            
                 clickableImage.addEventListener('click', (event) => {
                     event.preventDefault();
                     const mediaUrl = media.file;
                     openLightbox(mediaUrl, images);
                     currentImageIndex = index;
+                    updateTotalLikes(); // Mettez à jour le nombre total de likes
                 });
-
-                container.appendChild(clickableImage);
-
-                // Ajout des éléments pour les likes et le titre
-                const infoContainer = document.createElement('div');
-                infoContainer.classList.add('info-container');
-
-                const likeContainer = document.createElement('div');
-                likeContainer.classList.add('like-container');
-
-                const likeCount = document.createElement('span');
-                likeCount.classList.add('like-count');
-                likeCount.innerText = '0'; // Initialiser le nombre de likes à 0
-
-                const likeIcon = document.createElement('span');
-                likeIcon.classList.add('like-icon');
-                likeIcon.innerText = '❤️'; // Utiliser n'importe quel symbole que vous préférez
-
-                likeContainer.appendChild(likeCount);
-                likeContainer.appendChild(likeIcon);
-
-                infoContainer.appendChild(titleContainer);
-                infoContainer.appendChild(likeContainer);
-
-                container.appendChild(infoContainer);
-
-                galerie.appendChild(container);
-
-                // Événement pour incrémenter le nombre de likes lors du clic
-                let likes = 0;  // Variable pour suivre le nombre de likes
-                likeContainer.addEventListener('click', () => {
-                    likes++;
-                    likeCount.innerText = likes.toString();
-                });
-
-                images.push({ src: media.file, likes: 0 });
+            
+                galerie.appendChild(clickableImage);
+            
+                images.push({ src: media.file, title: 'Titre de la photo' });
             });
-
-// Fonction pour incrémenter les likes
-function incrementLikes(index) {
-    images[index].likes++;
-    const likeCountElement = document.querySelector(`.like-container:nth-child(${index * 2 + 2}) .like-count`);
-    likeCountElement.innerText = images[index].likes.toString();
-}
-
-
-            const imagesInGallery = document.querySelectorAll('.gallery-img');
-            imagesInGallery.forEach((image, index) => {
-                image.addEventListener('click', () => {
-                    openLightbox(images[index].src, images);
-                    currentImageIndex = index;
-                });
-            });
-
         } catch (error) {
             console.error("Erreur lors de la requête fetch :", error);
         }
     }
 
-    const openModal = document.querySelector('.contact_button');
-    const modal = document.querySelector('.modal');
-    const envoiForm = document.querySelector('.envoiForm');
-
-    openModal.addEventListener('click', () => {
-        modal.style.display = 'block';
-    });
-
-    const prenom = document.querySelector("#prenom");
-    const nom = document.querySelector("#nom");
-    const email = document.querySelector("#email");
-    const msg = document.querySelector("#msg");
-    const form = document.querySelector('#formulaire');
-
-    form.addEventListener('submit', finForm);
-
-    function finForm(e) {
-        e.preventDefault();
-        console.log(`
-        Prénom : ${prenom.value}
-        Nom : ${nom.value}
-        Email : ${email.value}
-        Message : ${msg.value}`);
-        modal.style.display = 'none';
-    }
-
     // Appel de la fonction pour charger les médias lors du chargement de la page
     window.onload = chargerMedias;
 });
-
