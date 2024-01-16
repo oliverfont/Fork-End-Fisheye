@@ -38,14 +38,14 @@ document.addEventListener('DOMContentLoaded', async function () {
     photoElement.src = photographerPhoto;
 
     // Fonction asynchrone pour capturer une miniature de vidéo à partir de son URL
-    async function captureVideoThumbnail(videoUrl) {
+    async function captureVideoThumbnail(videoUrl, galerie) {
+        const thumbnailPath = determineThumbnailPath(videoUrl);  // Appel à une fonction pour générer le chemin de la miniature
         return new Promise((resolve, reject) => {
             const video = document.createElement('video');
             video.src = videoUrl;
             video.onloadeddata = async () => {
                 try {
-                    // Appel à la fonction pour capturer une image de la vidéo
-                    const thumbnail = await captureVideoFrame(video);
+                    const thumbnail = await captureVideoFrame(video, galerie);
                     resolve(thumbnail);
                 } catch (error) {
                     reject(error);
@@ -53,26 +53,62 @@ document.addEventListener('DOMContentLoaded', async function () {
             };
             video.load();
         });
+    
+        // Nouvelle fonction pour générer le chemin de la miniature
+        function determineThumbnailPath(videoUrl) {
+            // Logique pour générer le chemin de la miniature en fonction de videoUrl
+            // Assurez-vous de manipuler correctement les chemins et les noms de fichiers
+            const firstPartOfName = photographerName.split(' ')[0];
+            return `/assets/photographers/Photos/${firstPartOfName}/${thumbnailFileName}`;
+        }
     }
-
+    
+    function determineThumbnailPath(videoUrl) {
+        // Logique pour générer le chemin de la miniature en fonction de videoUrl
+        // Assurez-vous de manipuler correctement les chemins et les noms de fichiers
+        const videoFileName = videoUrl.split('/').pop(); // Obtenez le nom du fichier vidéo
+        const thumbnailFileName = videoFileName.replace('.mp4', '_thumbnail.jpg'); // Remplacez l'extension pour obtenir le nom du fichier miniature
+        const firstPartOfName = photographerName.split(' ')[0];
+        return `/assets/photographers/Photos/${firstPartOfName}/${thumbnailFileName}`;
+    }
+    
     // Fonction asynchrone pour capturer une image d'une vidéo donnée
-    async function captureVideoFrame(video) {
-        // Création d'un élément canvas pour dessiner la vidéo
+    async function captureVideoFrame(video, videoUrl) {
         const canvas = document.createElement('canvas');
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-        // Création d'une miniature pour la vidéo en utilisant l'image capturée
+    
+        // Créer une miniature pour la vidéo en utilisant l'image capturée en format JPG
         const thumbnailImageElement = document.createElement('img');
-        thumbnailImageElement.src = canvas.toDataURL();
+        thumbnailImageElement.src = canvas.toDataURL("image/jpeg");  // Spécifier le type d'image comme "image/jpeg"
         thumbnailImageElement.classList.add('gallery-media', 'gallery-img');
         galerie.appendChild(thumbnailImageElement);
+    
+        return canvas.toDataURL("image/jpeg");
+    }    
 
-        return canvas.toDataURL();
-    }
+    // Fonction asynchrone pour capturer une image d'une vidéo donnée
+async function captureVideoFrame(video, galerie) {
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
+    // Créer une miniature pour la vidéo en utilisant l'image capturée en format JPG
+    const thumbnailImageElement = document.createElement('img');
+    thumbnailImageElement.src = canvas.toDataURL("image/jpeg");  // Spécifier le type d'image comme "image/jpeg"
+    thumbnailImageElement.classList.add('gallery-media', 'gallery-img');
+    galerie.appendChild(thumbnailImageElement);
+
+    const thumbnailSrc = canvas.toDataURL("image/jpeg");
+    console.log('Thumbnail created:', thumbnailSrc);
+
+    return thumbnailSrc;
+}
+    
     // Classe représentant un média (image ou vidéo)
     class Media {
         constructor(file, likes, thumbnail) {
@@ -105,19 +141,21 @@ document.addEventListener('DOMContentLoaded', async function () {
             const videoElement = document.createElement('video');
             videoElement.classList.add('gallery-media');
             videoElement.controls = true;
-
+        
             const sourceElement = document.createElement('source');
             sourceElement.src = this.file;
             sourceElement.type = 'video/mp4';
-
+        
             videoElement.appendChild(sourceElement);
-
-            // Création d'une miniature pour la vidéo en utilisant la miniature fournie
-            const thumbnailImageElement = this.createThumbnailImageElement(this.thumbnail);
-            galerie.appendChild(thumbnailImageElement);
-
+        
+            console.log('Before captureVideoThumbnail');
+            // Appel de la fonction captureVideoThumbnail avec galerie en paramètre
+            await captureVideoThumbnail(this.file, galerie);
+            console.log('After captureVideoThumbnail');
+        
             return videoElement;
         }
+
 
         // Création d'un élément image
         createImageElement() {
@@ -186,18 +224,22 @@ document.addEventListener('DOMContentLoaded', async function () {
             const images = [];
 
             // Parcours des données des médias
-            mediaArray.forEach((mediaData, index) => {
-                // Vérification si le média appartient au photographe actuel
+            mediaArray.forEach(async (mediaData, index) => {
+                // Vérification si le média appartient au photographe actuel          
                 if (mediaData.photographerId === photographerId) {
                     // Création d'un objet Media avec les informations du média
                     const media = new Media(
                         `${cheminDossierImages}/${mediaData.image}`,
-                        mediaData.likes
+                        mediaData.likes,
+                        `${cheminDossierImages}/${mediaData.thumbnail}`
                     );
-
                     // Création d'un conteneur pour le média
                     const container = document.createElement('div');
                     container.classList.add('photo-container');
+
+                    if (media.isVideo()) {
+                        await captureVideoThumbnail(media.file, galerie);
+                    }
 
                     // Formatage du titre du média
                     const formattedTitle = mediaData.title.replace(/_/g, ' ');
