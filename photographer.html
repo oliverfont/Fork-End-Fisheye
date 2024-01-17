@@ -16,8 +16,17 @@
     <div class="photograph-header">
       <button class="contact_button" onclick="displayModal()">Contactez-moi</button>
     </div>
+    <div class="filtre">
+      <label for="tri">Trier par : </label>
+      <select id="tri" name="tri">
+          <option value="popularite">Popularité</option>
+          <option value="date">Date</option>
+          <option value="titre">Titre</option>
+      </select>
+  </div>
     <div class="gallery" id="imageGallery">
     </div>
+    <aside class="asideInfos"></aside>
   </main>
 
   <div id="customLightbox">

@@ -67,8 +67,8 @@
 #lightboxContent {
     margin: 25px;
     display: flex;
-    align-items: center;
     justify-content: center;
+    flex-direction: column;
 }
 
 #lightboxImg {
@@ -81,8 +81,15 @@
 
 .next {
     cursor: pointer;
+    padding: 100px 100px 100px 0px;
 }
 
 .prev {
     cursor: pointer;
+    padding: 100px 0px 100px 100px;
+}
+
+.lightbox-title {
+    color: #901C1C;
+    font-size: 17px;
 }

@@ -4,6 +4,25 @@ body {
     margin: 0;
 }
 
+aside {
+    position: fixed;
+    bottom: 0;
+    right: 50px;
+    background-color: #DB8876;
+    color: #000000;
+    width: 15%;
+    display: flex;
+    justify-content: space-between;
+    padding: 15px;
+    font-weight: bold;
+}
+
+aside p {
+    margin: 0;
+    height: 100%;
+    width: 100%;
+    color: #000000;
+}
 
 header {
     display: flex;
@@ -246,4 +265,25 @@ form textarea {
 
 .tagline {
   margin: 0 0 15px 30px;
+}
+
+.filtre {
+  padding-left: 100px;
+  margin-top: 30px;
+  font-weight: bold;
+}
+
+#tri {
+  background-color: #901C1C;
+  color: white;
+  font-weight: bold;
+  border: none;
+  height: 30px;
+}
+
+option {
+  background: #901C1C;
+  color: white;
+  font-weight: bold;
+  border-radius: 0;
 }

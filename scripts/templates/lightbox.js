@@ -31,6 +31,12 @@ function openLightbox(mediaUrl, mediaList) {
             imageElement.src = currentMedia.src;
             imageElement.id = 'lightboxImg'; // Ajout de l'id "lightboxImg"
             lightboxMedia.appendChild(imageElement);
+
+            // Ajout du titre sous l'image
+            const titleElement = document.createElement('p');
+            titleElement.classList.add('lightbox-title');
+            titleElement.innerText = currentMedia.title;
+            lightboxMedia.appendChild(titleElement);
         }
 
         lightbox.style.display = 'flex';
@@ -48,6 +54,7 @@ function openLightbox(mediaUrl, mediaList) {
         console.error("Index de média actuel hors limites.");
     }
 }
+
 
 function navigateLightbox(direction) {
     const newIndex = (currentMediaIndex + direction + images.length) % images.length;

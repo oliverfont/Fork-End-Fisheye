@@ -1,5 +1,5 @@
 // Événement déclenché lorsque le DOM est complètement chargé
-document.addEventListener('DOMContentLoaded', async function () {
+document.addEventListener('DOMContentLoaded', async function () {    
     // Récupération des paramètres de l'URL
     const urlParams = new URLSearchParams(window.location.search);
     const photographerName = urlParams.get('name');
@@ -37,98 +37,103 @@ document.addEventListener('DOMContentLoaded', async function () {
     taglineElement.innerText = photographerTagline;
     photoElement.src = photographerPhoto;
 
-    // Fonction asynchrone pour capturer une miniature de vidéo à partir de son URL
-    async function captureVideoThumbnail(videoUrl, galerie) {
-        const thumbnailPath = determineThumbnailPath(videoUrl);  // Appel à une fonction pour générer le chemin de la miniature
-        return new Promise((resolve, reject) => {
+    // Ajout de l'événement pour le tri
+    document.getElementById('tri').addEventListener('change', function () {
+        const triOption = this.value;
+        // Appelez la fonction de tri avec l'option choisie et les images actuelles
+        trierGalerie(triOption, images);
+    });
+
+    // Fonction pour trier la galerie sans recharger les images
+// Fonction pour trier la galerie sans recharger les images
+function trierGalerie(triOption, images) {
+    switch (triOption) {
+        case 'popularite':
+            images.sort((a, b) => b.likes - a.likes);
+            break;
+        case 'date':
+            images.sort((a, b) => {
+                const dateA = new Date(a.date);
+                const dateB = new Date(b.date);
+                return dateB - dateA;
+            });
+            break;
+        case 'titre':
+            images.sort((a, b) => a.title.localeCompare(b.title));
+            break;
+        default:
+            break;
+    }
+
+    // Appelez la fonction pour mettre à jour la galerie avec les images triées
+    updateGallery(images);
+}
+
+    // Fonction pour mettre à jour la galerie avec les images triées
+    function updateGallery(sortedImages) {
+        const galerie = document.getElementById('imageGallery');
+
+        // Réorganisez les éléments existants dans la galerie sans rechargement
+        sortedImages.forEach((media, index) => {
+            const container = galerie.children[index];
+            galerie.appendChild(container);
+        });
+    }
+
+    async function captureVideoThumbnail(videoUrl) {
+        try {
+            const firstPartOfName = photographerName.split(' ')[0];
+            const thumbnailPath = determineThumbnailPath(videoUrl, firstPartOfName);
+            console.log('Thumbnail Path:', thumbnailPath);
+    
             const video = document.createElement('video');
             video.src = videoUrl;
-            video.onloadeddata = async () => {
-                try {
-                    const thumbnail = await captureVideoFrame(video, galerie);
-                    resolve(thumbnail);
-                } catch (error) {
-                    reject(error);
-                }
-            };
-            video.load();
-        });
+            await video.load();
     
-        // Nouvelle fonction pour générer le chemin de la miniature
-        function determineThumbnailPath(videoUrl) {
-            // Logique pour générer le chemin de la miniature en fonction de videoUrl
-            // Assurez-vous de manipuler correctement les chemins et les noms de fichiers
-            const firstPartOfName = photographerName.split(' ')[0];
-            return `/assets/photographers/Photos/${firstPartOfName}/${thumbnailFileName}`;
+            const thumbnail = await captureVideoFrame(video);
+            return thumbnail;
+        } catch (error) {
+            console.error('Error capturing video thumbnail:', error);
+            throw error;
         }
     }
     
-    function determineThumbnailPath(videoUrl) {
-        // Logique pour générer le chemin de la miniature en fonction de videoUrl
-        // Assurez-vous de manipuler correctement les chemins et les noms de fichiers
-        const videoFileName = videoUrl.split('/').pop(); // Obtenez le nom du fichier vidéo
-        const thumbnailFileName = videoFileName.replace('.mp4', '_thumbnail.jpg'); // Remplacez l'extension pour obtenir le nom du fichier miniature
-        const firstPartOfName = photographerName.split(' ')[0];
+    function determineThumbnailPath(videoUrl, firstPartOfName) {
+        const videoFileName = videoUrl.split('/').pop();
+        const thumbnailFileName = videoFileName.replace('.mp4', '_thumbnail.jpg');
         return `/assets/photographers/Photos/${firstPartOfName}/${thumbnailFileName}`;
     }
     
-    // Fonction asynchrone pour capturer une image d'une vidéo donnée
-    async function captureVideoFrame(video, videoUrl) {
-        const canvas = document.createElement('canvas');
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    
-        // Créer une miniature pour la vidéo en utilisant l'image capturée en format JPG
-        const thumbnailImageElement = document.createElement('img');
-        thumbnailImageElement.src = canvas.toDataURL("image/jpeg");  // Spécifier le type d'image comme "image/jpeg"
-        thumbnailImageElement.classList.add('gallery-media', 'gallery-img');
-        galerie.appendChild(thumbnailImageElement);
-    
-        return canvas.toDataURL("image/jpeg");
-    }    
 
-    // Fonction asynchrone pour capturer une image d'une vidéo donnée
-async function captureVideoFrame(video, galerie) {
+// Fonction asynchrone pour capturer une image d'une vidéo donnée
+async function captureVideoFrame(video) {
     const canvas = document.createElement('canvas');
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     const ctx = canvas.getContext('2d');
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-    // Créer une miniature pour la vidéo en utilisant l'image capturée en format JPG
-    const thumbnailImageElement = document.createElement('img');
-    thumbnailImageElement.src = canvas.toDataURL("image/jpeg");  // Spécifier le type d'image comme "image/jpeg"
-    thumbnailImageElement.classList.add('gallery-media', 'gallery-img');
-    galerie.appendChild(thumbnailImageElement);
-
-    const thumbnailSrc = canvas.toDataURL("image/jpeg");
-    console.log('Thumbnail created:', thumbnailSrc);
-
-    return thumbnailSrc;
+    // Retourne le chemin de la miniature au lieu d'ajouter au DOM
+    return canvas.toDataURL("image/jpeg");
 }
-    
+
     // Classe représentant un média (image ou vidéo)
     class Media {
-        constructor(file, likes, thumbnail) {
+        constructor(file, likes, thumbnail, title) {
             this.file = file;
             this.likes = likes;
-            this.thumbnail = thumbnail;  // Ajout du champ pour l'image miniature des vidéos
+            this.thumbnail = thumbnail;
+            this.title = title;
         }
 
-        // Création d'un élément cliquable (image ou vidéo)
-        createClickableImageElement() {
+        async createClickableImageElement() {
             const linkElement = document.createElement('a');
             linkElement.href = this.file;
 
-            // Si c'est une vidéo, créer un élément vidéo
             if (this.isVideo()) {
-                this.createVideoElement().then(videoElement => {
-                    linkElement.appendChild(videoElement);
-                });
+                const videoElement = await this.createVideoElement();
+                linkElement.appendChild(videoElement);
             } else {
-                // Sinon, créer un élément image
                 const imageElement = this.createImageElement();
                 linkElement.appendChild(imageElement);
             }
@@ -136,11 +141,13 @@ async function captureVideoFrame(video, galerie) {
             return linkElement;
         }
 
-        // Création d'un élément vidéo
         async createVideoElement() {
             const videoElement = document.createElement('video');
-            videoElement.classList.add('gallery-media');
+            videoElement.classList.add('gallery-media', 'gallery-img');
             videoElement.controls = true;
+        
+            // Capture de la miniature de manière synchrone
+            const thumbnailSrc = await captureVideoThumbnail(this.file);
         
             const sourceElement = document.createElement('source');
             sourceElement.src = this.file;
@@ -148,16 +155,13 @@ async function captureVideoFrame(video, galerie) {
         
             videoElement.appendChild(sourceElement);
         
-            console.log('Before captureVideoThumbnail');
-            // Appel de la fonction captureVideoThumbnail avec galerie en paramètre
-            await captureVideoThumbnail(this.file, galerie);
-            console.log('After captureVideoThumbnail');
+            // Afficher l'aperçu dans la console
+            console.log('Thumbnail created:', thumbnailSrc);
         
             return videoElement;
         }
+        
 
-
-        // Création d'un élément image
         createImageElement() {
             const imageElement = new Image();
             imageElement.classList.add('gallery-media', 'gallery-img');
@@ -165,210 +169,189 @@ async function captureVideoFrame(video, galerie) {
             return imageElement;
         }
 
-        // Création d'un élément image miniature
         createThumbnailImageElement(thumbnailSrc) {
             const thumbnailImage = this.createImageElement();
             thumbnailImage.src = thumbnailSrc;
             return thumbnailImage;
         }
 
-        // Vérification si le média est une vidéo
         isVideo() {
             return this.file.toLowerCase().endsWith('.mp4');
         }
     }
 
-    // Classe responsable de la création d'objets Media
     class MediaFactory {
         createMedia(file, likes, thumbnail) {
             return new Media(file, likes, thumbnail);
         }
     }
 
-    // Extraction du premier prénom du nom du photographe
     const firstPartOfName = photographerName.split(' ')[0];
-    // Génération dynamique du chemin du dossier des images
     const cheminDossierImages = `/assets/photographers/Photos/${firstPartOfName}/`;
-    // Sélection de l'élément galerie dans le DOM
     const galerie = document.getElementById('imageGallery');
-
-    // Instance de la fabrique de médias
     const mediaFactory = new MediaFactory();
 
-    // Fonction pour charger les médias du photographe actuel
     async function chargerMedias() {
         try {
-            // Récupération des données des photographes depuis le fichier JSON
             const photographersResponse = await fetch("/data/photographers.json");
             const photographersData = await photographersResponse.json();
             const photographers = photographersData.photographers;
-
-            // Récupération des données des médias depuis le fichier JSON
+    
             const mediaResponse = await fetch("/data/photographers.json");
             const mediaData = await mediaResponse.json();
             const mediaArray = mediaData.media;
-
-            // Recherche du photographe correspondant au nom passé en paramètre
+    
             const photographer = photographers.find(p => p.name === photographerName);
-
-            // Si le photographe n'est pas trouvé, afficher une erreur
-            if (!photographer) {
-                console.error('Photographer not found');
+            if (!photographerName) {
+                console.error('Photographer name not provided');
                 return;
             }
-
-            // Récupération de l'identifiant du photographe
+    
+            const firstPartOfName = photographerName.split(' ')[0];
+    
+    
             const photographerId = photographer.id;
-
-            // Tableau pour stocker les informations sur les images à afficher
+    
             const images = [];
-
-            // Parcours des données des médias
-            mediaArray.forEach(async (mediaData, index) => {
-                // Vérification si le média appartient au photographe actuel          
+    
+            for (let index = 0; index < mediaArray.length; index++) {
+                const mediaData = mediaArray[index];
+    
                 if (mediaData.photographerId === photographerId) {
-                    // Création d'un objet Media avec les informations du média
                     const media = new Media(
                         `${cheminDossierImages}/${mediaData.image}`,
                         mediaData.likes,
-                        `${cheminDossierImages}/${mediaData.thumbnail}`
+                        `${cheminDossierImages}/${mediaData.thumbnail}`,
+                        mediaData.title
                     );
-                    // Création d'un conteneur pour le média
+    
                     const container = document.createElement('div');
                     container.classList.add('photo-container');
-
+    
                     if (media.isVideo()) {
                         await captureVideoThumbnail(media.file, galerie);
                     }
-
-                    // Formatage du titre du média
+    
                     const formattedTitle = mediaData.title.replace(/_/g, ' ');
-
-                    // Création du conteneur du titre
+    
                     const titleContainer = document.createElement('div');
                     titleContainer.classList.add('title-container');
-
-                    // Création de l'élément de titre
+    
                     const titleElement = document.createElement('p');
                     titleElement.classList.add('media-title');
                     titleElement.innerText = formattedTitle;
-
-                    // Ajout du titre au conteneur
+    
                     titleContainer.appendChild(titleElement);
-
-                    // Ajout du conteneur du titre au conteneur principal
                     container.appendChild(titleContainer);
-
-                    // Création de l'élément cliquable du média
-                    const clickableImage = media.createClickableImageElement();
-
-                    // Ajout d'un gestionnaire d'événement pour ouvrir la lightbox
+    
+                    const clickableImage = await media.createClickableImageElement();
+    
                     clickableImage.addEventListener('click', (event) => {
                         event.preventDefault();
                         const mediaUrl = media.file;
                         openLightbox(mediaUrl, images);
-                        currentImageIndex = index;
+                        currentMediaIndex = index;
                     });
-
-                    // Ajout de l'élément cliquable au conteneur principal
+    
                     container.appendChild(clickableImage);
-
-                    // Création du conteneur des informations
+    
                     const infoContainer = document.createElement('div');
                     infoContainer.classList.add('info-container');
-
-                    // Création du conteneur des likes
+    
                     const likeContainer = document.createElement('div');
                     likeContainer.classList.add('like-container');
-
-                    // Création de l'élément affichant le nombre de likes
+    
                     const likeCount = document.createElement('span');
                     likeCount.classList.add('like-count');
                     likeCount.innerText = media.likes.toString();
-
-                    // Création de l'icône de like
+    
                     const likeIcon = document.createElement('span');
                     likeIcon.classList.add('like-icon');
                     likeIcon.innerText = '❤️';
-
-                    // Ajout du nombre de likes et de l'icône au conteneur des likes
+    
                     likeContainer.appendChild(likeCount);
                     likeContainer.appendChild(likeIcon);
-
-                    // Ajout du conteneur du titre et du conteneur des likes au conteneur d'informations
+    
                     infoContainer.appendChild(titleContainer);
                     infoContainer.appendChild(likeContainer);
-
-                    // Ajout du conteneur d'informations au conteneur principal
+    
                     container.appendChild(infoContainer);
-
-                    // Ajout du conteneur principal à la galerie
+    
                     galerie.appendChild(container);
-
-                    // Gestion des clics sur l'icône de like
+    
                     let liked = false;
                     likeContainer.addEventListener('click', () => {
-                        if (!liked) {
+                        if (liked) {
+                            media.likes--;
+                        } else {
                             media.likes++;
-                            likeCount.innerText = media.likes.toString();
-                            liked = true;
                         }
+                        likeCount.innerText = media.likes.toString();
+    
+                        liked = !liked;
                     });
-
-                    // Ajout des informations du média au tableau
-                    images.push({ src: media.file, likes: media.likes });
+    
+                    images.push({ src: media.file, likes: media.likes, title: media.title });
                 }
-            });
+            }
 
-            // Gestion des clics sur les images dans la galerie
+                // Tri du tableau d'images avant de le charger dans la galerie
+            trierGalerie('date', images);
+            console.log('Tableau d\'images:', images);
+    
+            const totalLikes = images.reduce((total, media) => total + media.likes, 0);
+            const asideInfo = document.querySelector('aside');
+            const prixInfo = document.createElement('p');
+            const totaLikeInfo = document.createElement('p')
+            prixInfo.innerHTML = `${photographer.price}€ / jour`;
+            totaLikeInfo.innerHTML = `${totalLikes} ❤️`;
+            asideInfo.appendChild(totaLikeInfo); 
+            asideInfo.appendChild(prixInfo);   
+
             const imagesInGallery = document.querySelectorAll('.gallery-img');
             imagesInGallery.forEach((image, index) => {
                 image.addEventListener('click', () => {
                     openLightbox(images[index].src, images);
-                    currentImageIndex = index;
+                    currentMediaIndex = index;
                 });
             });
-
         } catch (error) {
-            // Gestion des erreurs lors de la requête fetch
             console.error("Erreur lors de la requête fetch :", error);
         }
-    }
+    }    
 
-    // Sélection des éléments du formulaire de contact dans le DOM
     const openModal = document.querySelector('.contact_button');
     const modal = document.querySelector('.modal');
-    const envoiForm = document.querySelector('.envoiForm');
 
-    // Ajout d'un gestionnaire d'événement pour ouvrir la modal
     openModal.addEventListener('click', () => {
         modal.style.display = 'block';
     });
 
-    // Sélection des éléments du formulaire dans le DOM
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && modal.style.display === 'block') {
+            closeModal();
+        } else if (event.target === modal) {
+            closeModal();
+        }
+    });
+
     const prenom = document.querySelector("#prenom");
     const nom = document.querySelector("#nom");
     const email = document.querySelector("#email");
     const msg = document.querySelector("#msg");
     const form = document.querySelector('#formulaire');
 
-    // Ajout d'un gestionnaire d'événement pour soumettre le formulaire
     form.addEventListener('submit', finForm);
 
-    // Fonction appelée lors de la soumission du formulaire
     function finForm(e) {
-        // Empêcher le comportement par défaut du formulaire
         e.preventDefault();
-        // Afficher les informations du formulaire dans la console
         console.log(`
         Prénom : ${prenom.value}
         Nom : ${nom.value}
         Email : ${email.value}
         Message : ${msg.value}`);
-        // Cacher la modal après la soumission du formulaire
         modal.style.display = 'none';
     }
 
-    // Appel de la fonction pour charger les médias lors du chargement de la page
     window.onload = chargerMedias;
 });
