@@ -20,45 +20,32 @@ function openLightbox(mediaUrl, mediaList, isVideo = false, thumbnailSrc = '') {
         lightboxMedia.innerHTML = ''; // Nettoyez le contenu précédent de la lightbox
 
         if (isVideo) {
-            // Si c'est une vidéo, créez un lecteur vidéo avec miniature
-            const videoContainer = document.createElement('div');
-            videoContainer.classList.add('video-container');
-    
+            // Si c'est une vidéo, créez un lecteur vidéo sans miniature
             const videoElement = document.createElement('video');
-            videoElement.src = mediaUrl;
             videoElement.controls = true;
+            videoElement.autoplay = true;
 
-            // Ajoutez cet événement pour déclencher l'autoplay une fois que la vidéo est chargée
-            videoElement.addEventListener('loadedmetadata', function () {
-                videoElement.play();
-            });
+            const sourceElement = document.createElement('source');
+            sourceElement.src = mediaUrl;
+            sourceElement.type = 'video/mp4';
 
-            videoElement.addEventListener('loadeddata', function () {
-                videoElement.play();
-            });
-    
-            const thumbnailElement = document.createElement('img');
-            thumbnailElement.src = thumbnailSrc;
-            thumbnailElement.classList.add('thumbnail');
-    
-            videoContainer.appendChild(videoElement);
-            videoContainer.appendChild(thumbnailElement);
-    
-            lightboxMedia.appendChild(videoContainer);
+            videoElement.appendChild(sourceElement);
+
+            lightboxMedia.appendChild(videoElement);
         } else {
             // Si c'est une image, créez un élément image
             const imageElement = document.createElement('img');
             imageElement.src = mediaUrl;
             imageElement.id = 'lightboxImg'; // Ajout de l'id "lightboxImg"
             lightboxMedia.appendChild(imageElement);
-    
+
             // Ajout du titre sous l'image
             const titleElement = document.createElement('p');
             titleElement.classList.add('lightbox-title');
             titleElement.innerText = currentMedia.title;
             lightboxMedia.appendChild(titleElement);
         }
-    
+
         lightbox.style.display = 'flex';
         lightboxIsOpen = true;
 
@@ -74,6 +61,7 @@ function openLightbox(mediaUrl, mediaList, isVideo = false, thumbnailSrc = '') {
         console.error("Index de média actuel hors limites.");
     }
 }
+
 
 
 function navigateLightbox(direction) {

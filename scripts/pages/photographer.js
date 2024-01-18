@@ -62,22 +62,30 @@ document.addEventListener('DOMContentLoaded', async function () {
                 break;
             default:
                 break;
-        }
-
+        }            
         // Appelez la fonction pour mettre à jour la galerie avec les images triées
         updateGallery(images);
     }
+    
 
     // Fonction pour mettre à jour la galerie avec les images triées
     function updateGallery(sortedImages) {
         const galerie = document.getElementById('imageGallery');
-
-        // Réorganisez les éléments existants dans la galerie sans rechargement
-        sortedImages.forEach((media, index) => {
-            const container = galerie.children[index];
+        const containers = Array.from(galerie.children);
+    
+        // Trier les containers selon l'ordre souhaité
+        containers.sort((a, b) => {
+            const titleA = a.querySelector('.media-title').innerText;
+            const titleB = b.querySelector('.media-title').innerText;
+            return titleA.localeCompare(titleB);
+        });
+    
+        // Réorganiser les containers dans le DOM
+        containers.forEach(container => {
             galerie.appendChild(container);
         });
     }
+    
 
     async function captureVideoThumbnail(videoUrl) {
         try {
@@ -241,22 +249,21 @@ async function captureVideoFrame(video) {
     
             for (let index = 0; index < mediaArray.length; index++) {
                 const mediaData = mediaArray[index];
-    
+            
                 if (mediaData.photographerId === photographerId) {
                     console.log('Media Data:', mediaData);
-    
+            
                     const media = new Media(
                         `${cheminDossierImages}/${mediaData.video || mediaData.image}`,
                         mediaData.likes,
                         `${cheminDossierImages}/${mediaData.thumbnail}`,
                         mediaData.title
                     );
-    
+            
                     const container = document.createElement('div');
                     container.classList.add('photo-container');
-    
+            
                     if (media.isVideo()) {
-                        await captureVideoThumbnail(media.file, galerie);
                     }
     
                     const formattedTitle = mediaData.title.replace(/_/g, ' ');
