@@ -45,29 +45,28 @@ document.addEventListener('DOMContentLoaded', async function () {
     });
 
     // Fonction pour trier la galerie sans recharger les images
-// Fonction pour trier la galerie sans recharger les images
-function trierGalerie(triOption, images) {
-    switch (triOption) {
-        case 'popularite':
-            images.sort((a, b) => b.likes - a.likes);
-            break;
-        case 'date':
-            images.sort((a, b) => {
-                const dateA = new Date(a.date);
-                const dateB = new Date(b.date);
-                return dateB - dateA;
-            });
-            break;
-        case 'titre':
-            images.sort((a, b) => a.title.localeCompare(b.title));
-            break;
-        default:
-            break;
-    }
+    function trierGalerie(triOption, images) {
+        switch (triOption) {
+            case 'popularite':
+                images.sort((a, b) => b.likes - a.likes);
+                break;
+            case 'date':
+                images.sort((a, b) => {
+                    const dateA = new Date(a.date);
+                    const dateB = new Date(b.date);
+                    return dateB - dateA;
+                });
+                break;
+            case 'titre':
+                images.sort((a, b) => a.title.localeCompare(b.title));
+                break;
+            default:
+                break;
+        }
 
-    // Appelez la fonction pour mettre à jour la galerie avec les images triées
-    updateGallery(images);
-}
+        // Appelez la fonction pour mettre à jour la galerie avec les images triées
+        updateGallery(images);
+    }
 
     // Fonction pour mettre à jour la galerie avec les images triées
     function updateGallery(sortedImages) {
@@ -82,14 +81,15 @@ function trierGalerie(triOption, images) {
 
     async function captureVideoThumbnail(videoUrl) {
         try {
+            // Vous pouvez utiliser la même logique que dans le premier code pour le chemin du thumbnail
             const firstPartOfName = photographerName.split(' ')[0];
             const thumbnailPath = determineThumbnailPath(videoUrl, firstPartOfName);
             console.log('Thumbnail Path:', thumbnailPath);
-    
+
             const video = document.createElement('video');
             video.src = videoUrl;
             await video.load();
-    
+
             const thumbnail = await captureVideoFrame(video);
             return thumbnail;
         } catch (error) {
@@ -97,6 +97,7 @@ function trierGalerie(triOption, images) {
             throw error;
         }
     }
+
     
     function determineThumbnailPath(videoUrl, firstPartOfName) {
         const videoFileName = videoUrl.split('/').pop();
@@ -125,60 +126,86 @@ async function captureVideoFrame(video) {
             this.thumbnail = thumbnail;
             this.title = title;
         }
-
+    
         async createClickableImageElement() {
             const linkElement = document.createElement('a');
             linkElement.href = this.file;
-
+    
             if (this.isVideo()) {
-                const videoElement = await this.createVideoElement();
-                linkElement.appendChild(videoElement);
+                const thumbnailSrc = await this.createVideoThumbnail();
+                const thumbnailImageElement = this.createThumbnailImageElement(thumbnailSrc);
+                linkElement.appendChild(thumbnailImageElement);
             } else {
                 const imageElement = this.createImageElement();
                 linkElement.appendChild(imageElement);
             }
-
+    
             return linkElement;
         }
-
-        async createVideoElement() {
+    
+        createVideoElement() {
             const videoElement = document.createElement('video');
             videoElement.classList.add('gallery-media', 'gallery-img');
             videoElement.controls = true;
-        
-            // Capture de la miniature de manière synchrone
-            const thumbnailSrc = await captureVideoThumbnail(this.file);
-        
+    
             const sourceElement = document.createElement('source');
             sourceElement.src = this.file;
             sourceElement.type = 'video/mp4';
-        
+    
             videoElement.appendChild(sourceElement);
-        
-            // Afficher l'aperçu dans la console
-            console.log('Thumbnail created:', thumbnailSrc);
-        
+    
             return videoElement;
         }
-        
-
+    
+        async createVideoThumbnail() {
+            return new Promise((resolve, reject) => {
+                const videoElement = document.createElement('video');
+                videoElement.src = this.file;
+                videoElement.onloadeddata = async () => {
+                    try {
+                        const thumbnail = await this.captureVideoThumbnail(videoElement);
+                        resolve(thumbnail);
+                    } catch (error) {
+                        reject(error);
+                    }
+                };
+                videoElement.load();
+            });
+        }
+    
+        async captureVideoThumbnail(videoElement) {
+            return new Promise((resolve, reject) => {
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+    
+                canvas.width = videoElement.videoWidth;
+                canvas.height = videoElement.videoHeight;
+    
+                context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+    
+                const thumbnailDataUrl = canvas.toDataURL();
+                resolve(thumbnailDataUrl);
+            });
+        }
+    
         createImageElement() {
             const imageElement = new Image();
             imageElement.classList.add('gallery-media', 'gallery-img');
             imageElement.src = this.file;
             return imageElement;
         }
-
+    
         createThumbnailImageElement(thumbnailSrc) {
             const thumbnailImage = this.createImageElement();
             thumbnailImage.src = thumbnailSrc;
             return thumbnailImage;
         }
-
+    
         isVideo() {
             return this.file.toLowerCase().endsWith('.mp4');
         }
     }
+    
 
     class MediaFactory {
         createMedia(file, likes, thumbnail) {
@@ -208,8 +235,6 @@ async function captureVideoFrame(video) {
             }
     
             const firstPartOfName = photographerName.split(' ')[0];
-    
-    
             const photographerId = photographer.id;
     
             const images = [];
@@ -218,8 +243,10 @@ async function captureVideoFrame(video) {
                 const mediaData = mediaArray[index];
     
                 if (mediaData.photographerId === photographerId) {
+                    console.log('Media Data:', mediaData);
+    
                     const media = new Media(
-                        `${cheminDossierImages}/${mediaData.image}`,
+                        `${cheminDossierImages}/${mediaData.video || mediaData.image}`,
                         mediaData.likes,
                         `${cheminDossierImages}/${mediaData.thumbnail}`,
                         mediaData.title
@@ -246,12 +273,22 @@ async function captureVideoFrame(video) {
     
                     const clickableImage = await media.createClickableImageElement();
     
-                    clickableImage.addEventListener('click', (event) => {
+                    clickableImage.addEventListener('click', async (event) => {
                         event.preventDefault();
-                        const mediaUrl = media.file;
-                        openLightbox(mediaUrl, images);
-                        currentMediaIndex = index;
+                    
+                        if (media.isVideo()) {
+                            // Si c'est une vidéo, ouvre la lightbox avec le lecteur vidéo
+                            const videoUrl = media.file;
+                            const thumbnailSrc = await captureVideoThumbnail(videoUrl);
+                            openLightbox(videoUrl, images, true, thumbnailSrc);
+                            currentMediaIndex = index;
+                        } else {
+                            // Si c'est une image, ouvre la lightbox avec l'image
+                            openLightbox(media.file, images);
+                            currentMediaIndex = index;
+                        }
                     });
+                    
     
                     container.appendChild(clickableImage);
     
@@ -294,8 +331,8 @@ async function captureVideoFrame(video) {
                     images.push({ src: media.file, likes: media.likes, title: media.title });
                 }
             }
-
-                // Tri du tableau d'images avant de le charger dans la galerie
+    
+            // Tri du tableau d'images avant de le charger dans la galerie
             trierGalerie('date', images);
             console.log('Tableau d\'images:', images);
     
@@ -307,7 +344,7 @@ async function captureVideoFrame(video) {
             totaLikeInfo.innerHTML = `${totalLikes} ❤️`;
             asideInfo.appendChild(totaLikeInfo); 
             asideInfo.appendChild(prixInfo);   
-
+    
             const imagesInGallery = document.querySelectorAll('.gallery-img');
             imagesInGallery.forEach((image, index) => {
                 image.addEventListener('click', () => {
@@ -318,7 +355,8 @@ async function captureVideoFrame(video) {
         } catch (error) {
             console.error("Erreur lors de la requête fetch :", error);
         }
-    }    
+    }
+    
 
     const openModal = document.querySelector('.contact_button');
     const modal = document.querySelector('.modal');

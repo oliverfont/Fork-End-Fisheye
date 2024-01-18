@@ -93,3 +93,7 @@
     color: #901C1C;
     font-size: 17px;
 }
+
+video {
+  max-height: 80vh;
+}
