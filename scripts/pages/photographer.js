@@ -45,27 +45,27 @@ document.addEventListener('DOMContentLoaded', async function () {
     });
 
     // Fonction pour trier la galerie sans recharger les images
-    function trierGalerie(triOption, images) {
-        switch (triOption) {
-            case 'popularite':
-                images.sort((a, b) => b.likes - a.likes);
-                break;
-            case 'date':
-                images.sort((a, b) => {
-                    const dateA = new Date(a.date);
-                    const dateB = new Date(b.date);
-                    return dateB - dateA;
-                });
-                break;
-            case 'titre':
-                images.sort((a, b) => a.title.localeCompare(b.title));
-                break;
-            default:
-                break;
-        }            
-        // Appelez la fonction pour mettre à jour la galerie avec les images triées
-        updateGallery(images);
+function trierGalerie(triOption, images) {
+    switch (triOption) {
+        case 'popularite':
+            images.sort((a, b) => b.likes - a.likes);
+            break;
+        case 'date':
+            images.sort((a, b) => {
+                const dateA = new Date(a.date);
+                const dateB = new Date(b.date);
+                return dateB - dateA;
+            });
+            break;
+        case 'titre':
+            images.sort((a, b) => a.title.localeCompare(b.title));
+            break;
+        default:
+            break;
     }
+    // Appelez la fonction pour mettre à jour la galerie avec les images triées
+    updateGallery(images);
+}
     
 
     // Fonction pour mettre à jour la galerie avec les images triées
@@ -138,18 +138,21 @@ async function captureVideoFrame(video) {
         async createClickableImageElement() {
             const linkElement = document.createElement('a');
             linkElement.href = this.file;
-    
+        
             if (this.isVideo()) {
+                // Si c'est une vidéo, créez une miniature pour la galerie
                 const thumbnailSrc = await this.createVideoThumbnail();
                 const thumbnailImageElement = this.createThumbnailImageElement(thumbnailSrc);
                 linkElement.appendChild(thumbnailImageElement);
             } else {
+                // Si ce n'est pas une vidéo, créez un élément image normal pour la galerie
                 const imageElement = this.createImageElement();
                 linkElement.appendChild(imageElement);
             }
-    
+        
             return linkElement;
         }
+        
     
         createVideoElement() {
             const videoElement = document.createElement('video');
