@@ -1,5 +1,4 @@
 let lightboxIsOpen = false;
-let currentMediaIndex = 0;
 let images = [];
 
 function openLightbox(mediaUrl, mediaList, isVideo = false, thumbnailSrc = '') {
@@ -14,24 +13,48 @@ function openLightbox(mediaUrl, mediaList, isVideo = false, thumbnailSrc = '') {
     images = mediaList || [];
     currentMediaIndex = images.findIndex(media => media.src === mediaUrl);
 
-    if (currentMediaIndex >= 0 && currentMediaIndex < images.length) {
-        const currentMedia = images[currentMediaIndex];
-
-        lightboxMedia.innerHTML = ''; // Nettoyez le contenu précédent de la lightbox
+    if (currentMediaIndex === -1) {
+        console.error("Index de média introuvable. Utilisation du premier média.");
+        currentMediaIndex = 0;
+    } else {
+        // Supprimez l'élément existant de la lightbox
+        lightboxMedia.innerHTML = '';
 
         if (isVideo) {
-            // Si c'est une vidéo, créez un lecteur vidéo sans miniature
+            // Si c'est une vidéo, créez un lecteur vidéo avec miniature
+            const videoContainer = document.createElement('div');
+            videoContainer.classList.add('video-container');
+
             const videoElement = document.createElement('video');
             videoElement.controls = true;
-            videoElement.autoplay = true;
 
+            // Ajoutez cet événement pour déclencher l'autoplay une fois que la vidéo est chargée
+            videoElement.addEventListener('loadedmetadata', function () {
+                videoElement.play();
+                console.log('Video loadedmetadata event fired.');
+            });
+
+            videoElement.addEventListener('loadeddata', function () {
+                videoElement.play();
+                console.log('Video loadeddata event fired.');
+            });
+
+            const thumbnailElement = document.createElement('img');
+            thumbnailElement.src = thumbnailSrc;
+            thumbnailElement.classList.add('thumbnail');
+
+            videoContainer.appendChild(videoElement);
+            videoContainer.appendChild(thumbnailElement);
+
+            lightboxMedia.appendChild(videoContainer);
+
+            // Chargement de la vidéo
+            console.log('Setting video source:', mediaUrl);
             const sourceElement = document.createElement('source');
             sourceElement.src = mediaUrl;
             sourceElement.type = 'video/mp4';
-
             videoElement.appendChild(sourceElement);
-
-            lightboxMedia.appendChild(videoElement);
+            videoElement.load(); // Assurez-vous que la vidéo est chargée avant de tenter de la lire
         } else {
             // Si c'est une image, créez un élément image
             const imageElement = document.createElement('img');
@@ -42,7 +65,7 @@ function openLightbox(mediaUrl, mediaList, isVideo = false, thumbnailSrc = '') {
             // Ajout du titre sous l'image
             const titleElement = document.createElement('p');
             titleElement.classList.add('lightbox-title');
-            titleElement.innerText = currentMedia.title;
+            titleElement.innerText = images[currentMediaIndex].title;
             lightboxMedia.appendChild(titleElement);
         }
 
@@ -57,19 +80,42 @@ function openLightbox(mediaUrl, mediaList, isVideo = false, thumbnailSrc = '') {
                 closeLightbox();
             }
         });
-    } else {
-        console.error("Index de média actuel hors limites.");
     }
 }
 
 
 
-function navigateLightbox(direction) {
-    const newIndex = (currentMediaIndex + direction + images.length) % images.length;
 
-    if (newIndex >= 0 && newIndex < images.length) {
-        const newMediaUrl = images[newIndex].src;
-        openLightbox(newMediaUrl, images);
+// Ajout des fonctions de création d'éléments
+function createImageElement(imageUrl) {
+    const imageElement = document.createElement('img');
+    imageElement.classList.add('lightbox-media');
+    imageElement.src = imageUrl;
+    return imageElement;
+}
+
+function createVideoElement(videoUrl) {
+    const videoElement = document.createElement('video');
+    videoElement.classList.add('lightbox-media');
+    videoElement.controls = true;
+
+    const sourceElement = document.createElement('source');
+    sourceElement.src = videoUrl;
+    sourceElement.type = 'video/mp4';
+
+    videoElement.appendChild(sourceElement);
+
+    return videoElement;
+}
+
+function navigateLightbox(direction) {
+    currentMediaIndex = (currentMediaIndex + direction + images.length) % images.length;
+
+    if (currentMediaIndex >= 0 && currentMediaIndex < images.length) {
+        const newMediaUrl = images[currentMediaIndex].src;
+        const newMediaIsVideo = images[currentMediaIndex].isVideo;
+
+        openLightbox(newMediaUrl, images, newMediaIsVideo);
     }
 }
 

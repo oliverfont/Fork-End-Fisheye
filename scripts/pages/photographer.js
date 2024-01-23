@@ -37,14 +37,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     taglineElement.innerText = photographerTagline;
     photoElement.src = photographerPhoto;
 
-    // Ajout de l'événement pour le tri
-    document.getElementById('tri').addEventListener('change', function () {
-        const triOption = this.value;
-        // Appelez la fonction de tri avec l'option choisie et les images actuelles
-        trierGalerie(triOption, images);
-    });
-
-    // Fonction pour trier la galerie sans recharger les images
+// Fonction pour trier la galerie sans recharger les images
 function trierGalerie(triOption, images) {
     switch (triOption) {
         case 'popularite':
@@ -52,8 +45,8 @@ function trierGalerie(triOption, images) {
             break;
         case 'date':
             images.sort((a, b) => {
-                const dateA = new Date(a.date);
-                const dateB = new Date(b.date);
+                const dateA = a.date ? new Date(a.date) : new Date();
+                const dateB = b.date ? new Date(b.date) : new Date();
                 return dateB - dateA;
             });
             break;
@@ -66,26 +59,64 @@ function trierGalerie(triOption, images) {
     // Appelez la fonction pour mettre à jour la galerie avec les images triées
     updateGallery(images);
 }
-    
 
-    // Fonction pour mettre à jour la galerie avec les images triées
-    function updateGallery(sortedImages) {
-        const galerie = document.getElementById('imageGallery');
-        const containers = Array.from(galerie.children);
-    
-        // Trier les containers selon l'ordre souhaité
-        containers.sort((a, b) => {
-            const titleA = a.querySelector('.media-title').innerText;
-            const titleB = b.querySelector('.media-title').innerText;
-            return titleA.localeCompare(titleB);
+// Fonction pour mettre à jour la galerie avec les images triées
+function updateGallery(sortedImages) {
+    const galerie = document.getElementById('imageGallery');
+    const containers = Array.from(galerie.children);
+
+    // Réorganiser les containers dans le DOM selon l'ordre des médias triés
+    sortedImages.forEach(media => {
+        const container = containers.find(cont => {
+            const title = cont.querySelector('.media-title').innerText;
+            return title === media.title;
         });
-    
-        // Réorganiser les containers dans le DOM
-        containers.forEach(container => {
-            galerie.appendChild(container);
-        });
-    }
-    
+
+        galerie.appendChild(container);
+    });
+}
+
+// Fonction pour trier la galerie en fonction de l'option choisie
+function updateGalleryOrder(orderBy) {
+    const galerie = document.getElementById('imageGallery');
+    const containers = Array.from(galerie.querySelectorAll('.photo-container'));
+
+    // Trier les containers selon l'ordre souhaité
+    containers.sort((a, b) => {
+        const titleA = a.querySelector('.media-title').innerText;
+        const titleB = b.querySelector('.media-title').innerText;
+
+        switch (orderBy) {
+            case 'popularite':
+                return 0; // Ajoutez la logique du tri par popularité si nécessaire
+            case 'date':
+                return 0; // Ajoutez la logique du tri par date si nécessaire
+            case 'titre':
+                return titleA.localeCompare(titleB);
+            default:
+                return 0;
+        }
+    });
+
+    // Effacez le contenu actuel de la galerie
+    galerie.innerHTML = '';
+
+    // Retournez les containers triés
+    return containers;
+}
+
+// Écouteur d'événement pour le changement d'option de tri
+document.getElementById('tri').addEventListener('change', function () {
+    const triOption = this.value;
+    // Appelez la fonction pour trier la galerie avec l'option choisie
+    const sortedContainers = updateGalleryOrder(triOption);
+    // Mettez à jour la galerie avec les containers triés
+    sortedContainers.forEach(container => {
+        galerie.appendChild(container);
+    });
+});
+
+
 
     async function captureVideoThumbnail(videoUrl) {
         try {
@@ -128,11 +159,12 @@ async function captureVideoFrame(video) {
 
     // Classe représentant un média (image ou vidéo)
     class Media {
-        constructor(file, likes, thumbnail, title) {
+        constructor(file, likes, thumbnail, title, date) {
             this.file = file;
             this.likes = likes;
             this.thumbnail = thumbnail;
             this.title = title;
+            this.date = date;
         }
     
         async createClickableImageElement() {
@@ -216,11 +248,13 @@ async function captureVideoFrame(video) {
             return this.file.toLowerCase().endsWith('.mp4');
         }
     }
+
+    
     
 
     class MediaFactory {
-        createMedia(file, likes, thumbnail) {
-            return new Media(file, likes, thumbnail);
+        createMedia(file, likes, thumbnail, date) {
+            return new Media(file, likes, thumbnail, date);
         }
     }
 
@@ -254,15 +288,18 @@ async function captureVideoFrame(video) {
                 const mediaData = mediaArray[index];
             
                 if (mediaData.photographerId === photographerId) {
-                    console.log('Media Data:', mediaData);
+                    // Convertissez la chaîne de date en objet Date
+                    const dateParts = mediaData.date.split('-');
+                    const formattedDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
             
                     const media = new Media(
                         `${cheminDossierImages}/${mediaData.video || mediaData.image}`,
                         mediaData.likes,
                         `${cheminDossierImages}/${mediaData.thumbnail}`,
-                        mediaData.title
+                        mediaData.title,
+                        mediaData.date ? new Date(mediaData.date) : new Date()
                     );
-            
+                    
                     const container = document.createElement('div');
                     container.classList.add('photo-container');
             
@@ -366,7 +403,29 @@ async function captureVideoFrame(video) {
             console.error("Erreur lors de la requête fetch :", error);
         }
     }
-    
+
+// Fonction pour trier la galerie sans recharger les images
+function trierGalerie(triOption, images) {
+    switch (triOption) {
+        case 'popularite':
+            images.sort((a, b) => b.likes - a.likes);
+            break;
+        case 'date':
+            images.sort((a, b) => {
+                const dateA = a.date ? new Date(a.date) : new Date();
+                const dateB = b.date ? new Date(b.date) : new Date();
+                return dateB - dateA;
+            });
+            break;
+        case 'titre':
+            images.sort((a, b) => a.title.localeCompare(b.title));
+            break;
+        default:
+            break;
+    }
+    // Appelez la fonction pour mettre à jour la galerie avec les images triées
+    updateGallery(images);
+}
 
     const openModal = document.querySelector('.contact_button');
     const modal = document.querySelector('.modal');
