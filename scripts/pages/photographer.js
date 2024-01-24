@@ -300,7 +300,7 @@ async function captureVideoFrame(video) {
                         mediaData.date ? new Date(mediaData.date) : new Date()
                     );
                     
-                    const container = document.createElement('div');
+                    const container = document.createElement('article');
                     container.classList.add('photo-container');
             
                     if (media.isVideo()) {
@@ -351,7 +351,7 @@ async function captureVideoFrame(video) {
     
                     const likeIcon = document.createElement('span');
                     likeIcon.classList.add('like-icon');
-                    likeIcon.innerText = '❤️';
+                    likeIcon.innerText = '♥';
     
                     likeContainer.appendChild(likeCount);
                     likeContainer.appendChild(likeIcon);
@@ -367,14 +367,19 @@ async function captureVideoFrame(video) {
                     likeContainer.addEventListener('click', () => {
                         if (liked) {
                             media.likes--;
+                            totalLikes--;
+                            likeIcon.style.color = '';  // Réinitialise la couleur à la valeur par défaut
                         } else {
                             media.likes++;
+                            totalLikes++;
+                            likeIcon.style.color = '#ff0000';  // Définit la couleur à rouge (#ff0000)
                         }
                         likeCount.innerText = media.likes.toString();
-    
+                        totalLikeInfo.innerHTML = `${totalLikes} ♥`;
+                    
                         liked = !liked;
                     });
-    
+                        
                     images.push({ src: media.file, likes: media.likes, title: media.title });
                 }
             }
@@ -383,14 +388,16 @@ async function captureVideoFrame(video) {
             trierGalerie('date', images);
             console.log('Tableau d\'images:', images);
     
-            const totalLikes = images.reduce((total, media) => total + media.likes, 0);
+            let totalLikes = images.reduce((total, media) => total + media.likes, 0);
             const asideInfo = document.querySelector('aside');
             const prixInfo = document.createElement('p');
-            const totaLikeInfo = document.createElement('p')
+            const totalLikeInfo = document.createElement('p');
+            
             prixInfo.innerHTML = `${photographer.price}€ / jour`;
-            totaLikeInfo.innerHTML = `${totalLikes} ❤️`;
-            asideInfo.appendChild(totaLikeInfo); 
-            asideInfo.appendChild(prixInfo);   
+            totalLikeInfo.innerHTML = `${totalLikes} ♥`;
+            
+            asideInfo.appendChild(totalLikeInfo);
+            asideInfo.appendChild(prixInfo);
     
             const imagesInGallery = document.querySelectorAll('.gallery-img');
             imagesInGallery.forEach((image, index) => {
@@ -402,6 +409,15 @@ async function captureVideoFrame(video) {
         } catch (error) {
             console.error("Erreur lors de la requête fetch :", error);
         }
+        likeIcon.addEventListener('keydown', (event) => {
+            // Vérifiez si la touche pressée est "Enter" (code 13) ou "Space" (code 32)
+            if (event.code === 'Enter' || event.code === 'Space') {
+                event.preventDefault(); // Empêche le comportement par défaut du bouton
+                // Déclenchez le clic sur le like-icon
+                likeIcon.click();
+            }
+        });
+        
     }
 
 // Fonction pour trier la galerie sans recharger les images

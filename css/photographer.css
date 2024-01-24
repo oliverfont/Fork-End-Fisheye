@@ -15,6 +15,7 @@ aside {
     justify-content: space-between;
     padding: 15px;
     font-weight: bold;
+    align-items: center;
 }
 
 aside p {
@@ -22,6 +23,8 @@ aside p {
     height: 100%;
     width: 100%;
     color: #000000;
+    display: flex;
+    align-items: center;
 }
 
 header {
@@ -223,12 +226,12 @@ form textarea {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 8px;
     }
 
     .like-button {
         cursor: pointer;
         user-select: none;
+        color: #901C1C;
     }
 
     .photo-title {
@@ -249,7 +252,8 @@ form textarea {
   display: flex;
   width: 100%;
   align-items: center;
-  justify-content: space-between;
+  justify-content: space-between;  
+  color: #901C1C;
 }
 
 .title-container {
@@ -286,4 +290,12 @@ option {
   color: white;
   font-weight: bold;
   border-radius: 0;
+}
+
+.media-title {
+    color: #901C1C;
+}
+
+.like-icon {
+  font-size: 22px;
 }
