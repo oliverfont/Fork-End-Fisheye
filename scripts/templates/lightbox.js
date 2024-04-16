@@ -21,40 +21,21 @@ function openLightbox(mediaUrl, mediaList, isVideo = false, thumbnailSrc = '') {
         lightboxMedia.innerHTML = '';
 
         if (isVideo) {
-            // Si c'est une vidéo, créez un lecteur vidéo avec miniature
+            // Si c'est une vidéo, créez un lecteur vidéo directement dans la lightbox
             const videoContainer = document.createElement('div');
             videoContainer.classList.add('video-container');
 
             const videoElement = document.createElement('video');
             videoElement.controls = true;
 
-            // Ajoutez cet événement pour déclencher l'autoplay une fois que la vidéo est chargée
-            videoElement.addEventListener('loadedmetadata', function () {
-                videoElement.play();
-                console.log('Video loadedmetadata event fired.');
-            });
-
-            videoElement.addEventListener('loadeddata', function () {
-                videoElement.play();
-                console.log('Video loadeddata event fired.');
-            });
-
-            const thumbnailElement = document.createElement('img');
-            thumbnailElement.src = thumbnailSrc;
-            thumbnailElement.classList.add('thumbnail');
-
-            videoContainer.appendChild(videoElement);
-            videoContainer.appendChild(thumbnailElement);
-
-            lightboxMedia.appendChild(videoContainer);
-
-            // Chargement de la vidéo
-            console.log('Setting video source:', mediaUrl);
             const sourceElement = document.createElement('source');
             sourceElement.src = mediaUrl;
             sourceElement.type = 'video/mp4';
+
             videoElement.appendChild(sourceElement);
-            videoElement.load(); // Assurez-vous que la vidéo est chargée avant de tenter de la lire
+
+            videoContainer.appendChild(videoElement);
+            lightboxMedia.appendChild(videoContainer);
         } else {
             // Si c'est une image, créez un élément image
             const imageElement = document.createElement('img');
@@ -82,7 +63,6 @@ function openLightbox(mediaUrl, mediaList, isVideo = false, thumbnailSrc = '') {
         });
     }
 }
-
 
 
 
@@ -115,9 +95,11 @@ function navigateLightbox(direction) {
         const newMediaUrl = images[currentMediaIndex].src;
         const newMediaIsVideo = images[currentMediaIndex].isVideo;
 
+        // Vérifiez si le nouveau média est une vidéo ou une image, puis ouvrez la lightbox en conséquence
         openLightbox(newMediaUrl, images, newMediaIsVideo);
     }
 }
+
 
 function closeLightbox() {
     const lightbox = document.getElementById('customLightbox');
