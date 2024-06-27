@@ -1,6 +1,211 @@
-// Événement déclenché lorsque le DOM est complètement chargé
-document.addEventListener('DOMContentLoaded', async function () {    
-    // Récupération des paramètres de l'URL
+document.addEventListener('DOMContentLoaded', async function () { 
+    let lightboxIsOpen = false;
+    let images = [];
+    let currentMediaIndex = 0; // Déclarez currentMediaIndex en dehors de toute fonction
+
+    function openLightbox(mediaUrl, mediaList, isVideo = false) {
+        const lightbox = document.getElementById('customLightbox');
+        const lightboxMedia = document.getElementById('lightboxContent');
+
+        if (!lightboxMedia) {
+            console.error("L'élément lightboxMedia n'a pas été trouvé.");
+            return;
+        }
+
+        images = mediaList || [];
+        currentMediaIndex = images.findIndex(media => media.src === mediaUrl);
+
+        if (currentMediaIndex === -1) {
+            console.error("Index de média introuvable. Utilisation du premier média.");
+            currentMediaIndex = 0;
+        }
+
+        // Supprimez l'élément existant de la lightbox
+        lightboxMedia.innerHTML = '';
+
+        if (isVideo) {
+            // Si c'est une vidéo, créez un lecteur vidéo directement dans la lightbox
+            const videoElement = createVideoElement(mediaUrl);
+            lightboxMedia.appendChild(videoElement);
+        } else {
+            // Si c'est une image, créez un élément image
+            const imageElement = createImageElement(mediaUrl);
+            lightboxMedia.appendChild(imageElement);
+
+            // Ajout du titre sous l'image
+            const titleElement = document.createElement('p');
+            titleElement.classList.add('lightbox-title');
+            titleElement.innerText = images[currentMediaIndex].title;
+            lightboxMedia.appendChild(titleElement);
+        }
+
+        lightbox.style.display = 'flex';
+        lightboxIsOpen = true;
+
+        const closeBtn = document.querySelector('.close');
+        closeBtn.addEventListener('click', closeLightbox);
+
+        window.addEventListener('click', function (event) {
+            if (event.target === lightbox) {
+                closeLightbox();
+            }
+        });
+    }
+
+    // Ajout des fonctions de création d'éléments
+    function createImageElement(imageUrl) {
+        const imageElement = document.createElement('img');
+        imageElement.classList.add('lightbox-media');
+        imageElement.src = imageUrl;
+        return imageElement;
+    }
+
+    function createVideoElement(videoUrl) {
+        const videoElement = document.createElement('video');
+        videoElement.classList.add('lightbox-media');
+        videoElement.controls = true;
+        videoElement.autoplay = true; // Autoplay pour que la vidéo démarre immédiatement
+
+        const sourceElement = document.createElement('source');
+        sourceElement.src = videoUrl;
+        sourceElement.type = 'video/mp4';
+
+        videoElement.appendChild(sourceElement);
+
+        return videoElement;
+    }
+
+    function navigateLightbox(direction) {
+        currentMediaIndex = (currentMediaIndex + direction + images.length) % images.length;
+
+        if (currentMediaIndex >= 0 && currentMediaIndex < images.length) {
+            const newMedia = images[currentMediaIndex];
+            const newMediaUrl = newMedia.src;
+            const newMediaIsVideo = newMedia.isVideo;
+
+            // Vérifiez si le nouveau média est une vidéo ou une image, puis ouvrez la lightbox en conséquence
+            openLightbox(newMediaUrl, images, newMediaIsVideo);
+        }
+    }
+
+    function closeLightbox() {
+        const lightbox = document.getElementById('customLightbox');
+        lightbox.style.display = 'none';
+        lightboxIsOpen = false;
+    }
+
+    // Écouteur d'événements pour les touches du clavier
+    window.addEventListener('keydown', (event) => {
+        if (lightboxIsOpen) {
+            if (event.key === 'Escape') {
+                closeLightbox();
+            } else if (event.key === 'ArrowRight') {
+                navigateLightbox(1);
+            } else if (event.key === 'ArrowLeft') {
+                navigateLightbox(-1);
+            }
+        }
+    });
+
+    // Ajout d'écouteurs d'événements pour les boutons next et prev
+    document.querySelector('.next').addEventListener('click', () => {
+        navigateLightbox(1);
+    });
+
+    document.querySelector('.prev').addEventListener('click', () => {
+        navigateLightbox(-1);
+    });
+
+    class Media {
+        constructor(file, likes, thumbnail, title, date) {
+            this.file = file;
+            this.likes = likes;
+            this.thumbnail = thumbnail;
+            this.title = title;
+            this.date = date;
+        }
+
+        async createClickableImageElement() {
+            const linkElement = document.createElement('a');
+            linkElement.href = this.file;
+
+            if (this.isVideo()) {
+                // Si c'est une vidéo, créez une miniature pour la galerie
+                const thumbnailSrc = await this.createVideoThumbnail();
+                const thumbnailImageElement = this.createThumbnailImageElement(thumbnailSrc);
+                linkElement.appendChild(thumbnailImageElement);
+            } else {
+                // Si ce n'est pas une vidéo, créez un élément image normal pour la galerie
+                const imageElement = this.createImageElement();
+                linkElement.appendChild(imageElement);
+            }
+
+            return linkElement;
+        }
+
+        createVideoElement() {
+            const videoElement = document.createElement('video');
+            videoElement.classList.add('gallery-media', 'gallery-img');
+            videoElement.controls = true;
+
+            const sourceElement = document.createElement('source');
+            sourceElement.src = this.file;
+            sourceElement.type = 'video/mp4';
+
+            videoElement.appendChild(sourceElement);
+
+            return videoElement;
+        }
+
+        async createVideoThumbnail() {
+            return new Promise((resolve, reject) => {
+                const videoElement = document.createElement('video');
+                videoElement.src = this.file;
+                videoElement.onloadeddata = async () => {
+                    try {
+                        const thumbnail = await this.captureVideoThumbnail(videoElement);
+                        resolve(thumbnail);
+                    } catch (error) {
+                        reject(error);
+                    }
+                };
+                videoElement.load();
+            });
+        }
+
+        async captureVideoThumbnail(videoElement) {
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            canvas.width = videoElement.videoWidth;
+            canvas.height = videoElement.videoHeight;
+            context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+            return canvas.toDataURL();
+        }
+
+        createImageElement() {
+            const imageElement = new Image();
+            imageElement.classList.add('gallery-media', 'gallery-img');
+            imageElement.src = this.file;
+            return imageElement;
+        }
+
+        createThumbnailImageElement(thumbnailSrc) {
+            const thumbnailImage = this.createImageElement();
+            thumbnailImage.src = thumbnailSrc;
+            return thumbnailImage;
+        }
+
+        isVideo() {
+            return this.file.toLowerCase().endsWith('.mp4');
+        }
+    }
+
+    class MediaFactory {
+        createMedia(file, likes, thumbnail, title, date) {
+            return new Media(file, likes, thumbnail, title, date);
+        }
+    }
+
     const urlParams = new URLSearchParams(window.location.search);
     const photographerName = urlParams.get('name');
     const photographerLocation = urlParams.get('location');
@@ -59,27 +264,27 @@ document.addEventListener('DOMContentLoaded', async function () {
     }
 
     // Fonction pour trier la galerie sans recharger les images
-function trierGalerie(triOption, images) {
-    switch (triOption) {
-        case 'popularite':
-            images.sort((a, b) => b.likes - a.likes);
-            break;
-        case 'date':
-            images.sort((a, b) => {
-                const dateA = a.date ? a.date : new Date(); // Si la date est non définie, utilisez la date actuelle
-                const dateB = b.date ? b.date : new Date(); // Si la date est non définie, utilisez la date actuelle
-                return dateB - dateA;
-            });
-            break;
-        case 'titre':
-            images.sort((a, b) => a.title.localeCompare(b.title));
-            break;
-        default:
-            break;
+    function trierGalerie(triOption, images) {
+        switch (triOption) {
+            case 'popularite':
+                images.sort((a, b) => b.likes - a.likes);
+                break;
+            case 'date':
+                images.sort((a, b) => {
+                    const dateA = a.date ? a.date : new Date(); // Si la date est non définie, utilisez la date actuelle
+                    const dateB = b.date ? b.date : new Date(); // Si la date est non définie, utilisez la date actuelle
+                    return dateB - dateA;
+                });
+                break;
+            case 'titre':
+                images.sort((a, b) => a.title.localeCompare(b.title));
+                break;
+            default:
+                break;
+        }
+        // Appelez la fonction pour mettre à jour la galerie avec les images triées
+        updateGallery(images);
     }
-    // Appelez la fonction pour mettre à jour la galerie avec les images triées
-    updateGallery(images);
-}
 
     // Fonction pour mettre à jour la galerie avec les images triées
     function updateGallery(sortedImages) {
@@ -104,9 +309,9 @@ function trierGalerie(triOption, images) {
 
         // Trier les containers selon l'ordre souhaité
         containers.sort((a, b) => {
-            const likesA = parseInt(a.querySelector('.like-count').innerText);
-            const likesB = parseInt(b.querySelector('.like-count').innerText);
-        
+            let likesA = parseInt(a.querySelector('.like-count').innerText);
+            let likesB = parseInt(b.querySelector('.like-count').innerText);
+
             switch (orderBy) {
                 case 'popularite':
                     return likesB - likesA; // Trie du plus liké au moins liké
@@ -123,7 +328,6 @@ function trierGalerie(triOption, images) {
                     return 0;
             }
         });
-        
 
         // Effacez le contenu actuel de la galerie
         galerie.innerHTML = '';
@@ -189,105 +393,7 @@ function trierGalerie(triOption, images) {
         return canvas.toDataURL("image/jpeg");
     }
 
-    // Classe représentant un média (image ou vidéo)
-    class Media {
-        constructor(file, likes, thumbnail, title, date) {
-            this.file = file;
-            this.likes = likes;
-            this.thumbnail = thumbnail;
-            this.title = title;
-            this.date = date;
-        }
-
-        async createClickableImageElement() {
-            const linkElement = document.createElement('a');
-            linkElement.href = this.file;
-
-            if (this.isVideo()) {
-                // Si c'est une vidéo, créez une miniature pour la galerie
-                const thumbnailSrc = await this.createVideoThumbnail();
-                const thumbnailImageElement = this.createThumbnailImageElement(thumbnailSrc);
-                linkElement.appendChild(thumbnailImageElement);
-            } else {
-                // Si ce n'est pas une vidéo, créez un élément image normal pour la galerie
-                const imageElement = this.createImageElement();
-                linkElement.appendChild(imageElement);
-            }
-
-            return linkElement;
-        }
-
-        createVideoElement() {
-            const videoElement = document.createElement('video');
-            videoElement.classList.add('gallery-media', 'gallery-img');
-            videoElement.controls = true;
-
-            const sourceElement = document.createElement('source');
-            sourceElement.src = this.file;
-            sourceElement.type = 'video/mp4';
-
-            videoElement.appendChild(sourceElement);
-
-            return videoElement;
-        }
-
-        async createVideoThumbnail() {
-            return new Promise((resolve, reject) => {
-                const videoElement = document.createElement('video');
-                videoElement.src = this.file;
-                videoElement.onloadeddata = async () => {
-                    try {
-                        const thumbnail = await this.captureVideoThumbnail(videoElement);
-                        resolve(thumbnail);
-                    } catch (error) {
-                        reject(error);
-                    }
-                };
-                videoElement.load();
-            });
-        }
-
-        async captureVideoThumbnail(videoElement) {
-            return new Promise((resolve, reject) => {
-                const canvas = document.createElement('canvas');
-                const context = canvas.getContext('2d');
-
-                canvas.width = videoElement.videoWidth;
-                canvas.height = videoElement.videoHeight;
-
-                context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
-
-                const thumbnailDataUrl = canvas.toDataURL();
-                resolve(thumbnailDataUrl);
-            });
-        }
-
-        createImageElement() {
-            const imageElement = new Image();
-            imageElement.classList.add('gallery-media', 'gallery-img');
-            imageElement.src = this.file;
-            return imageElement;
-        }
-
-        createThumbnailImageElement(thumbnailSrc) {
-            const thumbnailImage = this.createImageElement();
-            thumbnailImage.src = thumbnailSrc;
-            return thumbnailImage;
-        }
-
-        isVideo() {
-            return this.file.toLowerCase().endsWith('.mp4');
-        }
-    }
-
-    class MediaFactory {
-        createMedia(file, likes, thumbnail, title, date, isVideo) {
-            return new Media(file, likes, thumbnail, title, date, isVideo);
-        }
-    }
-
-    const firstPartOfName = photographerName.split(' ')[0];
-    const cheminDossierImages = `/assets/photographers/Photos/${firstPartOfName}/`;
+    const cheminDossierImages = `/assets/photographers/Photos/${photographerName.split(' ')[0]}/`;
     const galerie = document.getElementById('imageGallery');
     const mediaFactory = new MediaFactory();
 
@@ -302,24 +408,20 @@ function trierGalerie(triOption, images) {
             const mediaArray = mediaData.media;
 
             const photographer = photographers.find(p => p.name === photographerName);
-            if (!photographerName) {
-                console.error('Photographer name not provided');
+            if (!photographer) {
+                console.error('Photographer not found');
                 return;
             }
 
-            const firstPartOfName = photographerName.split(' ')[0];
             const photographerId = photographer.id;
-
             const images = [];
 
-            for (let index = 0; index < mediaArray.length; index++) {
-                const mediaData = mediaArray[index];
-            
+            for (let mediaData of mediaArray) {
                 if (mediaData.photographerId === photographerId) {
                     // Convertissez la chaîne de date en objet Date
                     const dateParts = mediaData.date.split('-');
                     const formattedDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
-            
+
                     const media = new Media(
                         `${cheminDossierImages}/${mediaData.video || mediaData.image}`,
                         mediaData.likes,
@@ -327,12 +429,9 @@ function trierGalerie(triOption, images) {
                         mediaData.title,
                         mediaData.date ? new Date(mediaData.date) : new Date()
                     );
-                    
+
                     const container = document.createElement('article');
                     container.classList.add('photo-container');
-            
-                    if (media.isVideo()) {
-                    }
 
                     const formattedTitle = mediaData.title.replace(/_/g, ' ');
 
@@ -350,20 +449,18 @@ function trierGalerie(triOption, images) {
 
                     clickableImage.addEventListener('click', async (event) => {
                         event.preventDefault();
-                    
+
                         if (media.isVideo()) {
                             // Si c'est une vidéo, ouvre la lightbox avec le lecteur vidéo
                             const videoUrl = media.file;
-                            const thumbnailSrc = await captureVideoThumbnail(videoUrl);
-                            openLightbox(videoUrl, images, true, thumbnailSrc);
-                            currentMediaIndex = index;
+                            openLightbox(videoUrl, images, true);
+                            currentMediaIndex = images.findIndex(media => media.src === videoUrl);
                         } else {
                             // Si c'est une image, ouvre la lightbox avec l'image
                             openLightbox(media.file, images);
-                            currentMediaIndex = index;
+                            currentMediaIndex = images.findIndex(media => media.src === media.file);
                         }
                     });
-                    
 
                     container.appendChild(clickableImage);
 
@@ -380,7 +477,7 @@ function trierGalerie(triOption, images) {
                     const likeIcon = document.createElement('span');
                     likeIcon.classList.add('like-icon');
                     likeIcon.innerText = '♥';
-        
+
                     likeContainer.appendChild(likeCount);
                     likeContainer.appendChild(likeIcon);
 
@@ -404,12 +501,12 @@ function trierGalerie(triOption, images) {
                         }
                         likeCount.innerText = media.likes.toString();
                         totalLikeInfo.innerHTML = `${totalLikes} ♥`;
-                    
-                        liked = !liked;
-                    });                            likeIcon.style.color = '#ff0000';  // Définit la couleur à rouge (#ff0000)
 
-                        
-                    images.push({ src: media.file, likes: media.likes, title: media.title });
+                        liked = !liked;
+                    });
+                    likeIcon.style.color = '#ff0000';  // Définit la couleur à rouge (#ff0000)
+
+                    images.push({ src: media.file, likes: media.likes, title: media.title, isVideo: media.isVideo() });
                 }
             }
 
@@ -421,11 +518,10 @@ function trierGalerie(triOption, images) {
             const asideInfo = document.querySelector('aside');
             const prixInfo = document.createElement('p');
             const totalLikeInfo = document.createElement('p');
-            
 
             prixInfo.innerHTML = `${photographerPrice}€ / jour`;
             totalLikeInfo.innerHTML = `${totalLikes} ♥`;
-            
+
             asideInfo.appendChild(totalLikeInfo);
             asideInfo.appendChild(prixInfo);
 
@@ -438,7 +534,7 @@ function trierGalerie(triOption, images) {
             });
         } catch (error) {
             console.error("Erreur lors de la requête fetch :", error);
-        }        
+        }
     }
 
     const openModal = document.querySelector('.contact_button');

@@ -1,7 +1,8 @@
 let lightboxIsOpen = false;
 let images = [];
+let currentMediaIndex = 0; // Déclarez currentMediaIndex en dehors de toute fonction
 
-function openLightbox(mediaUrl, mediaList, isVideo = false, thumbnailSrc = '') {
+function openLightbox(mediaUrl, mediaList, isVideo = false) {
     const lightbox = document.getElementById('customLightbox');
     const lightboxMedia = document.getElementById('lightboxContent');
 
@@ -16,55 +17,39 @@ function openLightbox(mediaUrl, mediaList, isVideo = false, thumbnailSrc = '') {
     if (currentMediaIndex === -1) {
         console.error("Index de média introuvable. Utilisation du premier média.");
         currentMediaIndex = 0;
-    } else {
-        // Supprimez l'élément existant de la lightbox
-        lightboxMedia.innerHTML = '';
-
-        if (isVideo) {
-            // Si c'est une vidéo, créez un lecteur vidéo directement dans la lightbox
-            const videoContainer = document.createElement('div');
-            videoContainer.classList.add('video-container');
-
-            const videoElement = document.createElement('video');
-            videoElement.controls = true;
-
-            const sourceElement = document.createElement('source');
-            sourceElement.src = mediaUrl;
-            sourceElement.type = 'video/mp4';
-
-            videoElement.appendChild(sourceElement);
-
-            videoContainer.appendChild(videoElement);
-            lightboxMedia.appendChild(videoContainer);
-        } else {
-            // Si c'est une image, créez un élément image
-            const imageElement = document.createElement('img');
-            imageElement.src = mediaUrl;
-            imageElement.id = 'lightboxImg'; // Ajout de l'id "lightboxImg"
-            lightboxMedia.appendChild(imageElement);
-
-            // Ajout du titre sous l'image
-            const titleElement = document.createElement('p');
-            titleElement.classList.add('lightbox-title');
-            titleElement.innerText = images[currentMediaIndex].title;
-            lightboxMedia.appendChild(titleElement);
-        }
-
-        lightbox.style.display = 'flex';
-        lightboxIsOpen = true;
-
-        const closeBtn = document.querySelector('.close');
-        closeBtn.addEventListener('click', closeLightbox);
-
-        window.addEventListener('click', function (event) {
-            if (event.target === lightbox) {
-                closeLightbox();
-            }
-        });
     }
+
+    // Supprimez l'élément existant de la lightbox
+    lightboxMedia.innerHTML = '';
+
+    if (isVideo) {
+        // Si c'est une vidéo, créez un lecteur vidéo directement dans la lightbox
+        const videoElement = createVideoElement(mediaUrl);
+        lightboxMedia.appendChild(videoElement);
+    } else {
+        // Si c'est une image, créez un élément image
+        const imageElement = createImageElement(mediaUrl);
+        lightboxMedia.appendChild(imageElement);
+
+        // Ajout du titre sous l'image
+        const titleElement = document.createElement('p');
+        titleElement.classList.add('lightbox-title');
+        titleElement.innerText = images[currentMediaIndex].title;
+        lightboxMedia.appendChild(titleElement);
+    }
+
+    lightbox.style.display = 'flex';
+    lightboxIsOpen = true;
+
+    const closeBtn = document.querySelector('.close');
+    closeBtn.addEventListener('click', closeLightbox);
+
+    window.addEventListener('click', function (event) {
+        if (event.target === lightbox) {
+            closeLightbox();
+        }
+    });
 }
-
-
 
 // Ajout des fonctions de création d'éléments
 function createImageElement(imageUrl) {
@@ -78,6 +63,7 @@ function createVideoElement(videoUrl) {
     const videoElement = document.createElement('video');
     videoElement.classList.add('lightbox-media');
     videoElement.controls = true;
+    videoElement.autoplay = true; // Autoplay pour que la vidéo démarre immédiatement
 
     const sourceElement = document.createElement('source');
     sourceElement.src = videoUrl;
@@ -92,14 +78,14 @@ function navigateLightbox(direction) {
     currentMediaIndex = (currentMediaIndex + direction + images.length) % images.length;
 
     if (currentMediaIndex >= 0 && currentMediaIndex < images.length) {
-        const newMediaUrl = images[currentMediaIndex].src;
-        const newMediaIsVideo = images[currentMediaIndex].isVideo;
+        const newMedia = images[currentMediaIndex];
+        const newMediaUrl = newMedia.src;
+        const newMediaIsVideo = newMedia.isVideo;
 
         // Vérifiez si le nouveau média est une vidéo ou une image, puis ouvrez la lightbox en conséquence
         openLightbox(newMediaUrl, images, newMediaIsVideo);
     }
 }
-
 
 function closeLightbox() {
     const lightbox = document.getElementById('customLightbox');
@@ -107,6 +93,7 @@ function closeLightbox() {
     lightboxIsOpen = false;
 }
 
+// Écouteur d'événements pour les touches du clavier
 window.addEventListener('keydown', (event) => {
     if (lightboxIsOpen) {
         if (event.key === 'Escape') {
