@@ -493,7 +493,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                         if (liked) {
                             media.likes--;
                             totalLikes--;
-                            likeIcon.style.color = '';  // Réinitialise la couleur à la valeur par défaut
+                            likeIcon.style.color = '#901C1C';  // Réinitialise la couleur à la valeur par défaut
                         } else {
                             media.likes++;
                             totalLikes++;
@@ -504,7 +504,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
                         liked = !liked;
                     });
-                    likeIcon.style.color = '#ff0000';  // Définit la couleur à rouge (#ff0000)
+                    likeIcon.style.color = '#901C1C';  // Définit la couleur à rouge (#ff0000)
 
                     images.push({ src: media.file, likes: media.likes, title: media.title, isVideo: media.isVideo() });
                 }
