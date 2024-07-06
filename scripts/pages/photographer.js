@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', async function () { 
+document.addEventListener('DOMContentLoaded', async function () {
     let lightboxIsOpen = false;
     let images = [];
     let currentMediaIndex = 0; // Déclarez currentMediaIndex en dehors de toute fonction
@@ -316,13 +316,13 @@ document.addEventListener('DOMContentLoaded', async function () {
                 case 'popularite':
                     return likesB - likesA; // Trie du plus liké au moins liké
                 case 'date':
-                    const dateA = new Date(a.querySelector('.date').innerText);
-                    const dateB = new Date(b.querySelector('.date').innerText);
+                    const dateA = new Date(a.getAttribute('data-date'));
+                    const dateB = new Date(b.getAttribute('data-date'));
                     // Trie par date chronologique, du plus récent au plus ancien
                     return dateB - dateA;
                 case 'titre':
-                    const titleA = a.querySelector('.media-title').innerText;
-                    const titleB = b.querySelector('.media-title').innerText;
+                    const titleA = a.querySelector('.media-title').innerText.toLowerCase();
+                    const titleB = b.querySelector('.media-title').innerText.toLowerCase();
                     return titleA.localeCompare(titleB);
                 default:
                     return 0;
@@ -332,7 +332,22 @@ document.addEventListener('DOMContentLoaded', async function () {
         // Effacez le contenu actuel de la galerie
         galerie.innerHTML = '';
 
-        // Retournez les containers triés
+        // Ajoutez les containers triés à la galerie
+        containers.forEach(container => galerie.appendChild(container));
+
+        // Mettre à jour l'ordre des images dans le tableau 'images'
+        images = containers.map(container => {
+            const mediaElement = container.querySelector('a');
+            const isVideo = mediaElement.querySelector('video') !== null;
+            return {
+                src: mediaElement.href,
+                likes: parseInt(container.querySelector('.like-count').innerText),
+                title: container.querySelector('.media-title').innerText,
+                date: new Date(container.getAttribute('data-date')),
+                isVideo: isVideo
+            };
+        });
+
         return containers;
     }
 
@@ -340,11 +355,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     document.getElementById('tri').addEventListener('change', function () {
         const triOption = this.value;
         // Appelez la fonction pour trier la galerie avec l'option choisie
-        const sortedContainers = updateGalleryOrder(triOption);
-        // Mettez à jour la galerie avec les containers triés
-        sortedContainers.forEach(container => {
-            galerie.appendChild(container);
-        });
+        updateGalleryOrder(triOption);
     });
 
     async function captureVideoThumbnail(videoUrl) {
@@ -414,7 +425,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             }
 
             const photographerId = photographer.id;
-            const images = [];
+            images = []; // Remettre à zéro les images ici
 
             for (let mediaData of mediaArray) {
                 if (mediaData.photographerId === photographerId) {
@@ -427,11 +438,12 @@ document.addEventListener('DOMContentLoaded', async function () {
                         mediaData.likes,
                         `${cheminDossierImages}/${mediaData.thumbnail}`,
                         mediaData.title,
-                        mediaData.date ? new Date(mediaData.date) : new Date()
+                        formattedDate
                     );
 
                     const container = document.createElement('article');
                     container.classList.add('photo-container');
+                    container.setAttribute('data-date', formattedDate.toISOString()); // Stocker la date dans l'attribut de données
 
                     const formattedTitle = mediaData.title.replace(/_/g, ' ');
 
@@ -497,16 +509,16 @@ document.addEventListener('DOMContentLoaded', async function () {
                         } else {
                             media.likes++;
                             totalLikes++;
-                            likeIcon.style.color = '#ff0000';  // Définit la couleur à rouge (#ff0000)
+                            likeIcon.style.color = '#FF0000';  // Définit la couleur à rouge (#FF0000)
                         }
                         likeCount.innerText = media.likes.toString();
                         totalLikeInfo.innerHTML = `${totalLikes} ♥`;
 
                         liked = !liked;
                     });
-                    likeIcon.style.color = '#901C1C';  // Définit la couleur à rouge (#ff0000)
+                    likeIcon.style.color = '#901C1C';  // Définit la couleur à rouge (#FF0000)
 
-                    images.push({ src: media.file, likes: media.likes, title: media.title, isVideo: media.isVideo() });
+                    images.push({ src: media.file, likes: media.likes, title: media.title, date: media.date, isVideo: media.isVideo() });
                 }
             }
 
