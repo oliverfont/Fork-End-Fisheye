@@ -277,6 +277,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 });
                 break;
             case 'titre':
+                
                 images.sort((a, b) => a.title.localeCompare(b.title));
                 break;
             default:
@@ -329,25 +330,35 @@ document.addEventListener('DOMContentLoaded', async function () {
             }
         });
 
-        // Effacez le contenu actuel de la galerie
-        galerie.innerHTML = '';
-
         // Ajoutez les containers triés à la galerie
         containers.forEach(container => galerie.appendChild(container));
 
         // Mettre à jour l'ordre des images dans le tableau 'images'
-        images = containers.map(container => {
+        containers.forEach(container => {
             const mediaElement = container.querySelector('a');
-            const isVideo = mediaElement.querySelector('video') !== null;
-            return {
-                src: mediaElement.href,
-                likes: parseInt(container.querySelector('.like-count').innerText),
-                title: container.querySelector('.media-title').innerText,
-                date: new Date(container.getAttribute('data-date')),
-                isVideo: isVideo
-            };
-        });
-
+            const isVideo = container.querySelector('video') !== null;
+          
+            // Vérifiez si le container est déjà dans la galerie
+            const isInGallery = galerie.contains(container);
+            if (isInGallery) {
+              return; // Ignorer l'ajout du container déjà présent dans la galerie
+            }
+            
+            const updatedContainer = container.cloneNode(true);
+            galerie.appendChild(updatedContainer);
+          
+            if (isVideo) {
+              const videoElement = updatedContainer.querySelector('video');
+              const sourceElement = document.createElement('source');
+              sourceElement.src = mediaElement.href;
+              sourceElement.type = 'video/mp4';
+              videoElement.appendChild(sourceElement);
+            } else {
+              const imgElement = updatedContainer.querySelector('img');
+              imgElement.src = mediaElement.href;
+            }
+          });
+          
         return containers;
     }
 
@@ -358,33 +369,6 @@ document.addEventListener('DOMContentLoaded', async function () {
         updateGalleryOrder(triOption);
     });
 
-    async function captureVideoThumbnail(videoUrl) {
-        try {
-            const firstPartOfName = photographerName.split(' ')[0];
-            const thumbnailPath = determineThumbnailPath(videoUrl, firstPartOfName);
-            console.log('Thumbnail Path:', thumbnailPath);
-
-            const video = document.createElement('video');
-            video.src = videoUrl;
-            await video.load();
-
-            const thumbnail = await captureVideoFrame(video);
-
-            // Ajoutez la vidéo à la liste des images avec la miniature
-            images.push({
-                src: videoUrl,
-                likes: 0, // Vous pouvez ajuster cela en fonction de vos besoins
-                title: '', // Vous pouvez ajuster cela en fonction de vos besoins
-                isVideo: true,
-                thumbnail: thumbnail,
-            });
-
-            return thumbnail;
-        } catch (error) {
-            console.error('Error capturing video thumbnail:', error);
-            throw error;
-        }
-    }
 
     function determineThumbnailPath(videoUrl, firstPartOfName) {
         const videoFileName = videoUrl.split('/').pop();
