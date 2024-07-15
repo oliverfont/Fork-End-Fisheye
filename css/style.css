@@ -75,6 +75,7 @@ a .photographer_section article {
     color: #901C1C;
     font-weight: bold;
     font-size: 13px;
+    margin: auto;
 }
 
 .photographer_section article img {
@@ -87,4 +88,23 @@ a .photographer_section article {
 .price {
     color: #757575;
     font-size: 9px;
+}
+
+article {
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+  }
+
+  /* Styles pour les infobulles */
+.tooltip {
+    position: relative;
+    display: inline-block;
+    width: 150px;
+    background-color: #555;
+    color: #fff;
+    text-align: center;
+    border-radius: 5px;
+    padding: 5px;
+    z-index: 1;
 }

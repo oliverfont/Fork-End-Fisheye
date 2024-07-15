@@ -299,3 +299,16 @@ option {
 .like-icon {
   font-size: 22px;
 }
+
+  /* Styles pour les infobulles */
+  .tooltip {
+    position: relative;
+    display: inline-block;
+    width: 150px;
+    background-color: #555;
+    color: #fff;
+    text-align: center;
+    border-radius: 5px;
+    padding: 5px;
+    z-index: 1;
+}

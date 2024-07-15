@@ -44,12 +44,22 @@ document.addEventListener('DOMContentLoaded', async function () {
 
         const closeBtn = document.querySelector('.close');
         closeBtn.addEventListener('click', closeLightbox);
+        closeBtn.setAttribute('role', 'button');
+        closeBtn.setAttribute('aria-label', 'Close lightbox');
+        closeBtn.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+                closeLightbox();
+            }
+        });
 
         window.addEventListener('click', function (event) {
             if (event.target === lightbox) {
                 closeLightbox();
             }
         });
+
+        // Déplacez le focus vers la lightbox pour une meilleure navigation au clavier
+        lightbox.focus();
     }
 
     // Ajout des fonctions de création d'éléments
@@ -57,6 +67,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         const imageElement = document.createElement('img');
         imageElement.classList.add('lightbox-media');
         imageElement.src = imageUrl;
+        imageElement.alt = 'Image in lightbox';
         return imageElement;
     }
 
@@ -116,6 +127,18 @@ document.addEventListener('DOMContentLoaded', async function () {
         navigateLightbox(-1);
     });
 
+    document.querySelector('.next').addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+            navigateLightbox(1);
+        }
+    });
+
+    document.querySelector('.prev').addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+            navigateLightbox(-1);
+        }
+    });
+
     class Media {
         constructor(file, likes, thumbnail, title, date) {
             this.file = file;
@@ -128,20 +151,55 @@ document.addEventListener('DOMContentLoaded', async function () {
         async createClickableImageElement() {
             const linkElement = document.createElement('a');
             linkElement.href = this.file;
-
+            linkElement.tabIndex = 0;
+            linkElement.setAttribute('title', `Voir le média: ${this.title}`);
+        
             if (this.isVideo()) {
                 // Si c'est une vidéo, créez une miniature pour la galerie
                 const thumbnailSrc = await this.createVideoThumbnail();
                 const thumbnailImageElement = this.createThumbnailImageElement(thumbnailSrc);
                 linkElement.appendChild(thumbnailImageElement);
+                linkElement.setAttribute('aria-label', `Video: ${this.title}`);
             } else {
                 // Si ce n'est pas une vidéo, créez un élément image normal pour la galerie
                 const imageElement = this.createImageElement();
                 linkElement.appendChild(imageElement);
+                linkElement.setAttribute('aria-label', `Image: ${this.title}`);
             }
-
+        
+            // Fonction pour afficher l'infobulle
+            const showTooltip = (element) => {
+                const tooltipText = element.getAttribute('title');
+                const tooltip = document.createElement('div');
+                tooltip.className = 'tooltip';
+                tooltip.innerText = tooltipText;
+                document.body.appendChild(tooltip);
+        
+                const rect = element.getBoundingClientRect();
+                tooltip.style.position = 'absolute';
+                tooltip.style.left = `${rect.left + window.scrollX}px`;
+                tooltip.style.top = `${rect.bottom + window.scrollY}px`;
+        
+                element.addEventListener('blur', () => {
+                    document.body.removeChild(tooltip);
+                }, { once: true });
+            };
+        
+            linkElement.addEventListener('focus', () => showTooltip(linkElement));
+        
+            linkElement.addEventListener('keydown', async (event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    if (this.isVideo()) {
+                        openLightbox(this.file, images, true);
+                    } else {
+                        openLightbox(this.file, images);
+                    }
+                }
+            });
+        
             return linkElement;
-        }
+        }        
 
         createVideoElement() {
             const videoElement = document.createElement('video');
@@ -186,6 +244,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             const imageElement = new Image();
             imageElement.classList.add('gallery-media', 'gallery-img');
             imageElement.src = this.file;
+            imageElement.alt = this.title;
             return imageElement;
         }
 
@@ -227,6 +286,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     const photoElement = document.createElement('img');
     photoElement.classList.add('photo');
+    photoElement.alt = `Portrait of ${photographerName}`;
 
     const infoContainer = document.createElement('div');
 
@@ -277,7 +337,6 @@ document.addEventListener('DOMContentLoaded', async function () {
                 });
                 break;
             case 'titre':
-                
                 images.sort((a, b) => a.title.localeCompare(b.title));
                 break;
             default:
@@ -337,28 +396,28 @@ document.addEventListener('DOMContentLoaded', async function () {
         containers.forEach(container => {
             const mediaElement = container.querySelector('a');
             const isVideo = container.querySelector('video') !== null;
-          
+
             // Vérifiez si le container est déjà dans la galerie
             const isInGallery = galerie.contains(container);
             if (isInGallery) {
-              return; // Ignorer l'ajout du container déjà présent dans la galerie
+                return; // Ignorer l'ajout du container déjà présent dans la galerie
             }
-            
+
             const updatedContainer = container.cloneNode(true);
             galerie.appendChild(updatedContainer);
-          
+
             if (isVideo) {
-              const videoElement = updatedContainer.querySelector('video');
-              const sourceElement = document.createElement('source');
-              sourceElement.src = mediaElement.href;
-              sourceElement.type = 'video/mp4';
-              videoElement.appendChild(sourceElement);
+                const videoElement = updatedContainer.querySelector('video');
+                const sourceElement = document.createElement('source');
+                sourceElement.src = mediaElement.href;
+                sourceElement.type = 'video/mp4';
+                videoElement.appendChild(sourceElement);
             } else {
-              const imgElement = updatedContainer.querySelector('img');
-              imgElement.src = mediaElement.href;
+                const imgElement = updatedContainer.querySelector('img');
+                imgElement.src = mediaElement.href;
             }
-          });
-          
+        });
+
         return containers;
     }
 
@@ -368,7 +427,6 @@ document.addEventListener('DOMContentLoaded', async function () {
         // Appelez la fonction pour trier la galerie avec l'option choisie
         updateGalleryOrder(triOption);
     });
-
 
     function determineThumbnailPath(videoUrl, firstPartOfName) {
         const videoFileName = videoUrl.split('/').pop();
@@ -473,19 +531,32 @@ document.addEventListener('DOMContentLoaded', async function () {
                     const likeIcon = document.createElement('span');
                     likeIcon.classList.add('like-icon');
                     likeIcon.innerText = '♥';
-
-                    likeContainer.appendChild(likeCount);
-                    likeContainer.appendChild(likeIcon);
-
-                    infoContainer.appendChild(titleContainer);
-                    infoContainer.appendChild(likeContainer);
-
-                    container.appendChild(infoContainer);
-
-                    galerie.appendChild(container);
-
+                    likeIcon.tabIndex = 0; // Permettre la navigation par tabulation
+                    likeIcon.setAttribute('aria-label', `Like ${media.title}`);
+                    likeIcon.setAttribute('title', `Like ${media.title}`);
+                    
+                    // Fonction pour afficher l'infobulle
+                    const showTooltip = (element) => {
+                        const tooltipText = element.getAttribute('title');
+                        const tooltip = document.createElement('div');
+                        tooltip.className = 'tooltip';
+                        tooltip.innerText = tooltipText;
+                        document.body.appendChild(tooltip);
+                    
+                        const rect = element.getBoundingClientRect();
+                        tooltip.style.position = 'absolute';
+                        tooltip.style.left = `${rect.left + window.scrollX}px`;
+                        tooltip.style.top = `${rect.bottom + window.scrollY}px`;
+                    
+                        element.addEventListener('blur', () => {
+                            document.body.removeChild(tooltip);
+                        }, { once: true });
+                    };
+                    
+                    likeIcon.addEventListener('focus', () => showTooltip(likeIcon));
+                    
                     let liked = false;
-                    likeContainer.addEventListener('click', () => {
+                    const toggleLike = () => {
                         if (liked) {
                             media.likes--;
                             totalLikes--;
@@ -497,9 +568,28 @@ document.addEventListener('DOMContentLoaded', async function () {
                         }
                         likeCount.innerText = media.likes.toString();
                         totalLikeInfo.innerHTML = `${totalLikes} ♥`;
-
+                    
                         liked = !liked;
+                    };
+                    
+                    likeContainer.addEventListener('click', toggleLike);
+                    likeIcon.addEventListener('keydown', (event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                            toggleLike();
+                        }
                     });
+                    
+                    likeContainer.appendChild(likeCount);
+                    likeContainer.appendChild(likeIcon);
+                    
+
+                    infoContainer.appendChild(titleContainer);
+                    infoContainer.appendChild(likeContainer);
+
+                    container.appendChild(infoContainer);
+
+                    galerie.appendChild(container);
+
                     likeIcon.style.color = '#901C1C';  // Définit la couleur à rouge (#FF0000)
 
                     images.push({ src: media.file, likes: media.likes, title: media.title, date: media.date, isVideo: media.isVideo() });
@@ -535,10 +625,31 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     const openModal = document.querySelector('.contact_button');
     const modal = document.querySelector('.modal');
+    const closeModalButton = document.querySelector('.close-modal');
 
     openModal.addEventListener('click', () => {
         modal.style.display = 'block';
+        modal.querySelector('input, button, textarea').focus();
     });
+
+    openModal.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+            modal.style.display = 'block';
+            modal.querySelector('input, button, textarea').focus();
+        }
+    });
+
+    closeModalButton.addEventListener('click', closeModal);
+    closeModalButton.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+            closeModal();
+        }
+    });
+
+    function closeModal() {
+        modal.style.display = 'none';
+        openModal.focus();
+    }
 
     document.addEventListener('keydown', function (event) {
         if (event.key === 'Escape' && modal.style.display === 'block') {
