@@ -3,6 +3,7 @@ import { MediaFactory } from './media.js';
 import { openLightbox } from './lightbox.js';
 
 let images = [];
+let totalLikes = 0; // Déclarez totalLikes ici
 const mediaFactory = new MediaFactory();
 
 export async function chargerMedias(photographerId, cheminDossierImages) {
@@ -12,6 +13,7 @@ export async function chargerMedias(photographerId, cheminDossierImages) {
         const mediaArray = data.media;
 
         images = [];
+        totalLikes = 0; // Réinitialiser totalLikes lors du chargement des médias
 
         for (let mediaData of mediaArray) {
             if (mediaData.photographerId === photographerId) {
@@ -25,6 +27,8 @@ export async function chargerMedias(photographerId, cheminDossierImages) {
                     mediaData.title,
                     formattedDate
                 );
+
+                totalLikes += media.likes; // Additionnez les likes lors du chargement
 
                 const container = document.createElement('article');
                 container.classList.add('photo-container');
@@ -77,10 +81,15 @@ export async function chargerMedias(photographerId, cheminDossierImages) {
                 const toggleLike = () => {
                     if (liked) {
                         media.likes--;
+                        totalLikes--;
+                        likeIcon.style.color = '#901C1C';  // Réinitialise la couleur à la valeur par défaut
                     } else {
                         media.likes++;
+                        totalLikes++;
+                        likeIcon.style.color = '#FF0000';  // Définit la couleur à rouge (#FF0000)
                     }
                     likeCount.innerText = media.likes.toString();
+                    updateTotalLikes(); // Met à jour les likes totaux dans l'aside
                     liked = !liked;
                 };
 
@@ -106,13 +115,7 @@ export async function chargerMedias(photographerId, cheminDossierImages) {
         }
 
         trierGalerie('date');
-
-        let totalLikes = images.reduce((total, media) => total + media.likes, 0);
-        const totalLikeInfo = document.createElement('p');
-        totalLikeInfo.innerHTML = `${totalLikes} ♥`;
-        const aside = document.querySelector('aside');
-        aside.innerHTML = '';
-        aside.appendChild(totalLikeInfo);
+        updateTotalLikes(); // Mise à jour initiale des likes totaux
 
     } catch (error) {
         console.error("Erreur lors de la requête fetch :", error);
@@ -148,6 +151,13 @@ function updateGallery(sortedImages) {
 
         galerie.appendChild(container);
     });
+}
+
+function updateTotalLikes() {
+    const totalLikeInfo = document.querySelector('.total-likes');
+    if (totalLikeInfo) {
+        totalLikeInfo.innerHTML = `${totalLikes} ♥`;
+    }
 }
 
 export function getImages() {

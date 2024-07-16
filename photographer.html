@@ -1,73 +1,70 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
-  <link href="css/photographer.css" rel="stylesheet"/>
-  <meta charset="utf-8">
-  <link rel="icon" type="image/png" href="assets/favicon.png">
-  <title>Fisheye - photographe</title>
-  <link rel="stylesheet" type="text/css" href="/css/lightbox.css">
+    <link href="css/photographer.css" rel="stylesheet"/>
+    <meta charset="utf-8">
+    <link rel="icon" type="image/png" href="assets/favicon.png">
+    <title>Fisheye - photographe</title>
+    <link rel="stylesheet" type="text/css" href="/css/lightbox.css">
 </head>
 <body>
-  <header>
-    <a href="index.html"><img src="assets/images/logo.png" class="logo" title="Retour à l'accueil" /><span class="invisible">Retour à l'accueil</span></a>
-  </header>
-  <main id="main">
-    <div class="photograph-header">
-      <button class="contact_button" onclick="displayModal()">Contactez-moi</button>
-    </div>
-    <div class="filtre">
-      <label for="tri">Trier par : </label>
-      <select id="tri" name="tri">
-          <option value="popularite">Popularité</option>
-          <option value="date">Date</option>
-          <option value="titre">Titre</option>
-      </select>
-  </div>
-    <div class="gallery" id="imageGallery">
-    </div>
-    <aside class="asideInfos"></aside>
-  </main>
-
-  <div id="customLightbox">
-    <img class="prev" src="assets/icons/prev.png">
-    <div id="lightboxContent">
-        <img id="lightboxImg">
-        <video id="lightboxVideo" controls></video>
-    </div>
-    <img class="next" src="assets/icons/next.png">
-    <img src="assets/icons/close.png" class="close">
-</div>
-
-
-  <div id="contact_modal">
-    <div class="modal">
-      <header>
-        <h2>Contactez-moi</h2>
-        <img class="close-modal" src="assets/icons/close.svg" onclick="closeModal()" />
-      </header>
-      <form id="formulaire" action="photographer.html" method="get">
-        <div>
-          <label>Prénom</label>
-          <input type="text" name="prenom" id="prenom" aria-labelledby="prenom" aria-describedby="prenom" placeholder="Votre prénom">
+    <header>
+        <a href="index.html"><img src="assets/images/logo.png" class="logo" title="Retour à l'accueil" />Retour à l'accueil</a>
+    </header>
+    <main id="main">
+        <div class="photograph-header">
+            <button class="contact_button" onclick="displayModal()">Contactez-moi</button>
         </div>
-        <div>
-          <label>Nom</label>
-          <input type="text" name="nom" id="nom" aria-labelledby="nom" aria-describedby="nom" placeholder="Votre nom">
+        <div class="filtre">
+            <label for="tri">Trier par : </label>
+            <select id="tri" name="tri">
+                <option value="popularite">Popularité</option>
+                <option value="date">Date</option>
+                <option value="titre">Titre</option>
+            </select>
         </div>
-        <div>
-          <label>Email</label>
-          <input type="email" name="email" id="email" aria-labelledby="email" aria-describedby="email" placeholder="Votre email">
-        </div>
-        <div>
-          <label>Votre message</label>
-          <textarea name="message" id="msg" aria-labelledby="message" aria-describedby="message" placeholder="Votre Message"></textarea>
-        </div>
-        <button type="submit" class="envoiForm">Envoyer</button>
-      </form>
-    </div>
-  </div>
+        <div class="gallery" id="imageGallery"></div>
+        <aside class="asideInfos"></aside>
+    </main>
 
-  <script type="module" src="/scripts/pages/photographer.js"></script>
-  <script src="/scripts/utils/contactForm.js"></script>
+    <div id="customLightbox">
+        <img class="prev" src="assets/icons/prev.png">
+        <div id="lightboxContent">
+            <img id="lightboxImg">
+            <video id="lightboxVideo" controls></video>
+        </div>
+        <img class="next" src="assets/icons/next.png">
+        <img src="assets/icons/close.png" class="close">
+    </div>
+
+    <div id="contact_modal">
+        <div class="modal">
+            <header>
+                <h2>Contactez-moi</h2>
+                <img class="close-modal" src="assets/icons/close.svg" onclick="closeModal()" />
+            </header>
+            <form id="formulaire" action="photographer.html" method="get">
+                <div>
+                    <label>Prénom</label>
+                    <input type="text" name="prenom" id="prenom" aria-labelledby="prenom" aria-describedby="prenom" placeholder="Votre prénom">
+                </div>
+                <div>
+                    <label>Nom</label>
+                    <input type="text" name="nom" id="nom" aria-labelledby="nom" aria-describedby="nom" placeholder="Votre nom">
+                </div>
+                <div>
+                    <label>Email</label>
+                    <input type="email" name="email" id="email" aria-labelledby="email" aria-describedby="email" placeholder="Votre email">
+                </div>
+                <div>
+                    <label>Votre message</label>
+                    <textarea name="message" id="msg" aria-labelledby="message" aria-describedby="message" placeholder="Votre Message"></textarea>
+                </div>
+                <button type="submit" class="envoiForm">Envoyer</button>
+            </form>
+        </div>
+    </div>
+
+    <script type="module" src="/scripts/pages/photographer.js"></script>
 </body>
 </html>

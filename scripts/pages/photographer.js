@@ -3,6 +3,8 @@ import { openLightbox, closeLightbox, navigateLightbox } from './lightbox.js';
 import { Media, MediaFactory } from './media.js';
 import { chargerMedias, trierGalerie, getImages } from './gallery.js';
 
+let currentMediaIndex = 0; // Déclarez currentMediaIndex en haut du fichier
+
 document.addEventListener('DOMContentLoaded', async function () {
     const urlParams = new URLSearchParams(window.location.search);
     const photographerName = urlParams.get('name');
@@ -27,6 +29,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         const asideInfo = document.querySelector('aside');
         const prixInfo = document.createElement('p');
         const totalLikeInfo = document.createElement('p');
+        totalLikeInfo.classList.add('total-likes'); // Ajout d'une classe pour la mise à jour
 
         prixInfo.innerHTML = `${photographerPrice}€ / jour`;
         totalLikeInfo.innerHTML = `${totalLikes} ♥`;
