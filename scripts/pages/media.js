@@ -20,12 +20,32 @@ export class Media {
 
         // Vérifier si le fichier est une vidéo ou une image
         if (this.isVideo()) {
-            // Si c'est une vidéo, crée un élément vidéo pour la galerie
+            // Si c'est une vidéo, créez un élément vidéo pour la galerie
             const videoElement = this.createVideoElement();
+            linkElement.tabIndex = -1;
             linkElement.appendChild(videoElement);
             linkElement.setAttribute('aria-label', `Video: ${this.title}`);
+
+            // Créez un élément cliquable invisible par-dessus la vidéo
+            const overlayElement = document.createElement('div');
+            overlayElement.style.position = 'absolute';
+            overlayElement.style.top = 0;
+            overlayElement.style.left = 0;
+            overlayElement.style.width = '100%';
+            overlayElement.style.height = '100%';
+            overlayElement.style.cursor = 'pointer';
+            overlayElement.style.backgroundColor = 'rgba(0, 0, 0, 0)'; // Transparent
+
+            // Ajoutez un écouteur d'événement pour ouvrir la lightbox au clic
+            overlayElement.addEventListener('click', (event) => {
+                event.preventDefault();
+                openLightbox(this.file, images, true);
+            });
+
+            linkElement.style.position = 'relative'; // Position relative pour que l'overlay fonctionne correctement
+            linkElement.appendChild(overlayElement);
         } else {
-            // Si ce n'est pas une vidéo, crée un élément image pour la galerie
+            // Si ce n'est pas une vidéo, créez un élément image pour la galerie
             const imageElement = this.createImageElement();
             linkElement.appendChild(imageElement);
             linkElement.setAttribute('aria-label', `Image: ${this.title}`);
