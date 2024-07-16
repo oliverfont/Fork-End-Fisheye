@@ -10,7 +10,7 @@ export class Media {
         this.date = date;
     }
 
-    async createClickableImageElement() {
+    async createClickableImageElement(images) {
         const linkElement = document.createElement('a');
         linkElement.href = this.file;
         linkElement.tabIndex = 0;
@@ -37,6 +37,9 @@ export class Media {
                 }
             }
         });
+
+        // Ajout d'infobulle
+        linkElement.addEventListener('focus', () => showTooltip(linkElement));
 
         return linkElement;
     }
@@ -97,6 +100,24 @@ export class Media {
     isVideo() {
         return this.file.toLowerCase().endsWith('.mp4');
     }
+}
+
+// Fonction pour afficher l'infobulle
+function showTooltip(element) {
+    const tooltipText = element.getAttribute('title');
+    const tooltip = document.createElement('div');
+    tooltip.className = 'tooltip';
+    tooltip.innerText = tooltipText;
+    document.body.appendChild(tooltip);
+
+    const rect = element.getBoundingClientRect();
+    tooltip.style.position = 'absolute';
+    tooltip.style.left = `${rect.left + window.scrollX}px`;
+    tooltip.style.top = `${rect.bottom + window.scrollY}px`;
+
+    element.addEventListener('blur', () => {
+        document.body.removeChild(tooltip);
+    }, { once: true });
 }
 
 export class MediaFactory {

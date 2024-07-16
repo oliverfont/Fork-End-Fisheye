@@ -312,3 +312,9 @@ option {
     padding: 5px;
     z-index: 0;
   }
+
+
+.invisible {
+    height: 0;
+    opacity: 0;
+}

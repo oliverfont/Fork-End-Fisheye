@@ -29,10 +29,14 @@ export function openLightbox(mediaUrl, mediaList, isVideo = false) {
         const imageElement = createImageElement(mediaUrl);
         lightboxMedia.appendChild(imageElement);
 
-        const titleElement = document.createElement('p');
-        titleElement.classList.add('lightbox-title');
-        titleElement.innerText = images[currentMediaIndex].title;
-        lightboxMedia.appendChild(titleElement);
+        if (images[currentMediaIndex]) {
+            const titleElement = document.createElement('p');
+            titleElement.classList.add('lightbox-title');
+            titleElement.innerText = images[currentMediaIndex].title;
+            lightboxMedia.appendChild(titleElement);
+        } else {
+            console.error('Media not found at currentMediaIndex');
+        }
     }
 
     lightbox.style.display = 'flex';
@@ -40,13 +44,16 @@ export function openLightbox(mediaUrl, mediaList, isVideo = false) {
 
     const nextBtn = document.querySelector('.next');
     nextBtn.tabIndex = 0;
+    nextBtn.setAttribute('title', 'Next media');
     const prevBtn = document.querySelector('.prev');
     prevBtn.tabIndex = 0;
+    prevBtn.setAttribute('title', 'Previous media');
     const closeBtn = document.querySelector('.close');
     closeBtn.tabIndex = 0;
-    closeBtn.addEventListener('click', closeLightbox);
+    closeBtn.setAttribute('title', 'Close lightbox');
     closeBtn.setAttribute('role', 'button');
     closeBtn.setAttribute('aria-label', 'Close lightbox');
+    closeBtn.addEventListener('click', closeLightbox);
     closeBtn.addEventListener('keydown', (event) => {
         if (event.key === 'Enter' || event.key === ' ') {
             closeLightbox();
