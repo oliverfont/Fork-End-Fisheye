@@ -1,8 +1,9 @@
-// lightbox.js
+// Déclaration des variables globales pour suivre l'état de la lightbox, les images et l'index du média actuel
 let lightboxIsOpen = false;
 let images = [];
 let currentMediaIndex = 0;
 
+// Fonction pour ouvrir la lightbox avec un média donné (image ou vidéo)
 export function openLightbox(mediaUrl, mediaList, isVideo = false) {
     const lightbox = document.getElementById('customLightbox');
     const lightboxMedia = document.getElementById('lightboxContent');
@@ -12,6 +13,7 @@ export function openLightbox(mediaUrl, mediaList, isVideo = false) {
         return;
     }
 
+    // Mise à jour des images et de l'index du média actuel
     images = mediaList || [];
     currentMediaIndex = images.findIndex(media => media.src === mediaUrl);
 
@@ -20,8 +22,10 @@ export function openLightbox(mediaUrl, mediaList, isVideo = false) {
         currentMediaIndex = 0;
     }
 
+    // Réinitialiser le contenu de la lightbox
     lightboxMedia.innerHTML = '';
 
+    // Ajoute le média (image ou vidéo) à la lightbox
     if (isVideo) {
         const videoElement = createVideoElement(mediaUrl);
         lightboxMedia.appendChild(videoElement);
@@ -29,15 +33,18 @@ export function openLightbox(mediaUrl, mediaList, isVideo = false) {
         const imageElement = createImageElement(mediaUrl);
         lightboxMedia.appendChild(imageElement);
 
+        // Ajoute le titre sous l'image
         const titleElement = document.createElement('p');
         titleElement.classList.add('lightbox-title');
         titleElement.innerText = images[currentMediaIndex].title;
         lightboxMedia.appendChild(titleElement);
     }
 
+    // Affiche la lightbox
     lightbox.style.display = 'flex';
     lightboxIsOpen = true;
 
+    // Gérer les boutons de navigation et de fermeture
     const nextBtn = document.querySelector('.next');
     nextBtn.tabIndex = 0;
     const prevBtn = document.querySelector('.prev');
@@ -53,21 +60,25 @@ export function openLightbox(mediaUrl, mediaList, isVideo = false) {
         }
     });
 
+    // Ferme la lightbox si l'utilisateur clique en dehors de celle-ci
     window.addEventListener('click', function (event) {
         if (event.target === lightbox) {
             closeLightbox();
         }
     });
 
+    // Déplace le focus vers la lightbox pour une meilleure navigation au clavier
     lightbox.focus();
 }
 
+// Fonction pour fermer la lightbox
 export function closeLightbox() {
     const lightbox = document.getElementById('customLightbox');
     lightbox.style.display = 'none';
     lightboxIsOpen = false;
 }
 
+// Fonction pour naviguer entre les médias dans la lightbox
 export function navigateLightbox(direction) {
     currentMediaIndex = (currentMediaIndex + direction + images.length) % images.length;
 
@@ -80,6 +91,7 @@ export function navigateLightbox(direction) {
     }
 }
 
+// Fonction pour créer un élément image
 function createImageElement(imageUrl) {
     const imageElement = document.createElement('img');
     imageElement.classList.add('lightbox-media');
@@ -88,6 +100,7 @@ function createImageElement(imageUrl) {
     return imageElement;
 }
 
+// Fonction pour créer un élément vidéo
 function createVideoElement(videoUrl) {
     const videoElement = document.createElement('video');
     videoElement.classList.add('lightbox-media');
@@ -103,6 +116,7 @@ function createVideoElement(videoUrl) {
     return videoElement;
 }
 
+// Écouteur d'événements pour les touches du clavier
 document.addEventListener('keydown', (event) => {
     if (lightboxIsOpen) {
         if (event.key === 'Escape') {
@@ -115,6 +129,7 @@ document.addEventListener('keydown', (event) => {
     }
 });
 
+// Écouteurs d'événements pour les boutons de navigation
 document.querySelector('.next').addEventListener('click', () => {
     navigateLightbox(1);
 });
