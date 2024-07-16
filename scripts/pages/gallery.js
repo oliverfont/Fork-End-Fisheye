@@ -23,7 +23,7 @@ export async function chargerMedias(photographerId, cheminDossierImages) {
                 const media = mediaFactory.createMedia(
                     `${cheminDossierImages}/${mediaData.video || mediaData.image}`,
                     mediaData.likes,
-                    `${cheminDossierImages}/${mediaData.thumbnail}`,
+                    `${cheminDossierImages}/${mediaData.thumbnail}`, // Utiliser la miniature prédéfinie
                     mediaData.title,
                     formattedDate
                 );
