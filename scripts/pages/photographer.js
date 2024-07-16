@@ -41,8 +41,12 @@ document.addEventListener('DOMContentLoaded', async function () {
 
         lightbox.style.display = 'flex';
         lightboxIsOpen = true;
-
+        const nextBtn = document.querySelector('.next');
+        nextBtn.tabIndex = 0;
+        const prevBtn = document.querySelector('.prev');
+        prevBtn.tabIndex = 0;
         const closeBtn = document.querySelector('.close');
+        closeBtn.tabIndex = 0;
         closeBtn.addEventListener('click', closeLightbox);
         closeBtn.setAttribute('role', 'button');
         closeBtn.setAttribute('aria-label', 'Close lightbox');
@@ -531,7 +535,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                     const likeIcon = document.createElement('span');
                     likeIcon.classList.add('like-icon');
                     likeIcon.innerText = '♥';
-                    likeIcon.tabIndex = 0; // Permettre la navigation par tabulation
+                    likeIcon.tabIndex = 0;
                     likeIcon.setAttribute('aria-label', `Like ${media.title}`);
                     likeIcon.setAttribute('title', `Like ${media.title}`);
                     
@@ -621,60 +625,6 @@ document.addEventListener('DOMContentLoaded', async function () {
         } catch (error) {
             console.error("Erreur lors de la requête fetch :", error);
         }
-    }
-
-    const openModal = document.querySelector('.contact_button');
-    const modal = document.querySelector('.modal');
-    const closeModalButton = document.querySelector('.close-modal');
-
-    openModal.addEventListener('click', () => {
-        modal.style.display = 'block';
-        modal.querySelector('input, button, textarea').focus();
-    });
-
-    openModal.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter' || event.key === ' ') {
-            modal.style.display = 'block';
-            modal.querySelector('input, button, textarea').focus();
-        }
-    });
-
-    closeModalButton.addEventListener('click', closeModal);
-    closeModalButton.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter' || event.key === ' ') {
-            closeModal();
-        }
-    });
-
-    function closeModal() {
-        modal.style.display = 'none';
-        openModal.focus();
-    }
-
-    document.addEventListener('keydown', function (event) {
-        if (event.key === 'Escape' && modal.style.display === 'block') {
-            closeModal();
-        } else if (event.target === modal) {
-            closeModal();
-        }
-    });
-
-    const prenom = document.querySelector("#prenom");
-    const nom = document.querySelector("#nom");
-    const email = document.querySelector("#email");
-    const msg = document.querySelector("#msg");
-    const form = document.querySelector('#formulaire');
-
-    form.addEventListener('submit', finForm);
-
-    function finForm(e) {
-        e.preventDefault();
-        console.log(`
-        Prénom : ${prenom.value}
-        Nom : ${nom.value}
-        Email : ${email.value}
-        Message : ${msg.value}`);
-        modal.style.display = 'none';
     }
 
     window.onload = chargerMedias;
