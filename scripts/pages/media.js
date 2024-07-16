@@ -27,6 +27,8 @@ export class Media {
             linkElement.setAttribute('aria-label', `Image: ${this.title}`);
         }
 
+        linkElement.addEventListener('focus', () => showTooltip(linkElement));
+
         linkElement.addEventListener('keydown', async (event) => {
             if (event.key === 'Enter' || event.key === ' ') {
                 event.preventDefault();
@@ -37,9 +39,6 @@ export class Media {
                 }
             }
         });
-
-        // Ajout d'infobulle
-        linkElement.addEventListener('focus', () => showTooltip(linkElement));
 
         return linkElement;
     }
@@ -102,6 +101,12 @@ export class Media {
     }
 }
 
+export class MediaFactory {
+    createMedia(file, likes, thumbnail, title, date) {
+        return new Media(file, likes, thumbnail, title, date);
+    }
+}
+
 // Fonction pour afficher l'infobulle
 function showTooltip(element) {
     const tooltipText = element.getAttribute('title');
@@ -118,10 +123,4 @@ function showTooltip(element) {
     element.addEventListener('blur', () => {
         document.body.removeChild(tooltip);
     }, { once: true });
-}
-
-export class MediaFactory {
-    createMedia(file, likes, thumbnail, title, date) {
-        return new Media(file, likes, thumbnail, title, date);
-    }
 }

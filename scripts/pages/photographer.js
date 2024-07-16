@@ -1,8 +1,7 @@
 // photographer.js
 import { openLightbox, closeLightbox, navigateLightbox } from './lightbox.js';
 import { Media, MediaFactory } from './media.js';
-import { displayPhotographerInfo } from './photographerInfo.js';
-import { chargerMedias, trierGalerie } from './gallery.js';
+import { chargerMedias, trierGalerie, getImages } from './gallery.js';
 
 document.addEventListener('DOMContentLoaded', async function () {
     const urlParams = new URLSearchParams(window.location.search);
@@ -12,6 +11,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     const photographerPhoto = urlParams.get('picture');
     const photographerPrice = urlParams.get('price');
 
+    // Afficher les informations du photographe
     displayPhotographerInfo(photographerName, photographerLocation, photographerTagline, photographerPhoto, photographerPrice);
 
     const photographersResponse = await fetch("/data/photographers.json");
@@ -20,6 +20,27 @@ document.addEventListener('DOMContentLoaded', async function () {
     if (photographer) {
         const cheminDossierImages = `/assets/photographers/Photos/${photographerName.split(' ')[0]}`;
         await chargerMedias(photographer.id, cheminDossierImages);
+
+        let images = getImages(); // Récupérer les images après le chargement
+
+        let totalLikes = images.reduce((total, media) => total + media.likes, 0);
+        const asideInfo = document.querySelector('aside');
+        const prixInfo = document.createElement('p');
+        const totalLikeInfo = document.createElement('p');
+
+        prixInfo.innerHTML = `${photographerPrice}€ / jour`;
+        totalLikeInfo.innerHTML = `${totalLikes} ♥`;
+
+        asideInfo.appendChild(totalLikeInfo);
+        asideInfo.appendChild(prixInfo);
+
+        const imagesInGallery = document.querySelectorAll('.gallery-img');
+        imagesInGallery.forEach((image, index) => {
+            image.addEventListener('click', () => {
+                openLightbox(images[index].src, images);
+                currentMediaIndex = index;
+            });
+        });
     }
 
     document.getElementById('tri').addEventListener('change', function () {
@@ -33,6 +54,34 @@ document.addEventListener('DOMContentLoaded', async function () {
         element.addEventListener('focus', () => showTooltip(element));
     });
 });
+
+function displayPhotographerInfo(name, location, tagline, photo, price) {
+    const photograpHeader = document.querySelector('.photograph-header');
+    const nameElement = document.createElement('h2');
+    nameElement.classList.add('name');
+
+    const locationElement = document.createElement('p');
+    locationElement.classList.add('location');
+
+    const taglineElement = document.createElement('p');
+    taglineElement.classList.add('tagline');
+
+    const photoElement = document.createElement('img');
+    photoElement.classList.add('photo');
+    photoElement.alt = `Portrait of ${name}`;
+
+    const infoContainer = document.createElement('div');
+    infoContainer.appendChild(nameElement);
+    infoContainer.appendChild(locationElement);
+    infoContainer.appendChild(taglineElement);
+    photograpHeader.appendChild(infoContainer);
+    photograpHeader.appendChild(photoElement);
+
+    nameElement.innerText = name;
+    locationElement.innerText = location;
+    taglineElement.innerText = tagline;
+    photoElement.src = photo;
+}
 
 // Fonction pour afficher l'infobulle
 function showTooltip(element) {

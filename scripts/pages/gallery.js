@@ -3,7 +3,7 @@ import { MediaFactory } from './media.js';
 import { openLightbox } from './lightbox.js';
 
 let images = [];
-const mediaFactory = new MediaFactory(); // Créer une instance de MediaFactory
+const mediaFactory = new MediaFactory();
 
 export async function chargerMedias(photographerId, cheminDossierImages) {
     try {
@@ -42,7 +42,7 @@ export async function chargerMedias(photographerId, cheminDossierImages) {
                 titleContainer.appendChild(titleElement);
                 container.appendChild(titleContainer);
 
-                const clickableImage = await media.createClickableImageElement();
+                const clickableImage = await media.createClickableImageElement(images);
 
                 clickableImage.addEventListener('click', async (event) => {
                     event.preventDefault();
@@ -105,18 +105,21 @@ export async function chargerMedias(photographerId, cheminDossierImages) {
             }
         }
 
-        trierGalerie('date', images);
+        trierGalerie('date');
 
         let totalLikes = images.reduce((total, media) => total + media.likes, 0);
         const totalLikeInfo = document.createElement('p');
         totalLikeInfo.innerHTML = `${totalLikes} ♥`;
-        document.querySelector('aside').appendChild(totalLikeInfo);
+        const aside = document.querySelector('aside');
+        aside.innerHTML = '';
+        aside.appendChild(totalLikeInfo);
+
     } catch (error) {
         console.error("Erreur lors de la requête fetch :", error);
     }
 }
 
-export function trierGalerie(triOption, images) {
+export function trierGalerie(triOption) {
     switch (triOption) {
         case 'popularite':
             images.sort((a, b) => b.likes - a.likes);
@@ -145,4 +148,8 @@ function updateGallery(sortedImages) {
 
         galerie.appendChild(container);
     });
+}
+
+export function getImages() {
+    return images;
 }
