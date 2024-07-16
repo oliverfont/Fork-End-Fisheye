@@ -1,16 +1,16 @@
-// Import des fonctions et classes nécessaires
+// Importation des modules nécessaires
 import { MediaFactory } from './media.js';
 import { openLightbox } from './lightbox.js';
 
-// Déclaration de variables globales
+// Déclaration des variables globales
 let images = [];
 let totalLikes = 0;
 const mediaFactory = new MediaFactory();
 
-// Fonction pour charger les médias d'un photographe
+// Fonction asynchrone pour charger les médias d'un photographe
 export async function chargerMedias(photographerId, cheminDossierImages) {
     try {
-        // Récupération des données des photographes à partir du fichier JSON
+        // Récupération des données des photographes
         const response = await fetch("/data/photographers.json");
         const data = await response.json();
         const mediaArray = data.media;
@@ -18,13 +18,14 @@ export async function chargerMedias(photographerId, cheminDossierImages) {
         images = [];
         totalLikes = 0; // Réinitialiser totalLikes lors du chargement des médias
 
-        // Parcourir les médias et les ajouter à la galerie s'ils appartiennent au photographe
+        // Parcourir chaque média et créer les éléments nécessaires
         for (let mediaData of mediaArray) {
             if (mediaData.photographerId === photographerId) {
+                // Formater la date
                 const dateParts = mediaData.date.split('-');
                 const formattedDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
 
-                // Création d'un objet Media pour chaque média
+                // Créer un média à partir des données récupérées
                 const media = mediaFactory.createMedia(
                     `${cheminDossierImages}/${mediaData.video || mediaData.image}`,
                     mediaData.likes,
@@ -36,7 +37,7 @@ export async function chargerMedias(photographerId, cheminDossierImages) {
                 // Additionner les likes lors du chargement
                 totalLikes += media.likes;
 
-                // Création de l'élément article pour afficher le média
+                // Créer les conteneurs pour chaque média
                 const container = document.createElement('article');
                 container.classList.add('photo-container');
                 container.setAttribute('data-date', formattedDate.toISOString());
@@ -53,12 +54,12 @@ export async function chargerMedias(photographerId, cheminDossierImages) {
                 titleContainer.appendChild(titleElement);
                 container.appendChild(titleContainer);
 
-                // Création de l'élément cliquable pour ouvrir la lightbox
+                // Créer un élément image ou vidéo cliquable pour chaque média
                 const clickableImage = await media.createClickableImageElement(images);
 
+                // Écouteur d'événements pour ouvrir la lightbox lors du clic
                 clickableImage.addEventListener('click', async (event) => {
                     event.preventDefault();
-
                     if (media.isVideo()) {
                         openLightbox(media.file, images, true);
                     } else {
@@ -85,7 +86,7 @@ export async function chargerMedias(photographerId, cheminDossierImages) {
                 likeIcon.setAttribute('aria-label', `Like ${media.title}`);
                 likeIcon.setAttribute('title', `Like ${media.title}`);
 
-                // Gestion des likes
+                // Gérer l'ajout et le retrait des likes
                 let liked = false;
                 const toggleLike = () => {
                     if (liked) {
@@ -95,19 +96,14 @@ export async function chargerMedias(photographerId, cheminDossierImages) {
                     } else {
                         media.likes++;
                         totalLikes++;
-                        likeIcon.style.color = '#FF0000';  // Définit la couleur à rouge quand on like
+                        likeIcon.style.color = '#FF0000';  // Définit la couleur à rouge lorsque liké
                     }
                     likeCount.innerText = media.likes.toString();
                     updateTotalLikes(); // Met à jour les likes totaux dans l'aside
                     liked = !liked;
-
-                    // Vérifiez si le tri est par popularité et mettez à jour la galerie
-                    const triOption = document.getElementById('tri').value;
-                    if (triOption === 'popularite') {
-                        trierGalerie(triOption);
-                    }
                 };
 
+                // Écouteurs d'événements pour le clic et la navigation clavier
                 likeContainer.addEventListener('click', toggleLike);
                 likeIcon.addEventListener('keydown', (event) => {
                     if (event.key === 'Enter' || event.key === ' ') {
@@ -123,13 +119,15 @@ export async function chargerMedias(photographerId, cheminDossierImages) {
 
                 container.appendChild(infoContainer);
 
+                // Ajouter le conteneur de média à la galerie
                 document.getElementById('imageGallery').appendChild(container);
 
+                // Ajouter le média à la liste des images
                 images.push({ src: media.file, likes: media.likes, title: media.title, date: media.date, isVideo: media.isVideo() });
             }
         }
 
-        // Trier la galerie par date par défaut et mettre à jour les likes totaux
+        // Trier les médias par date par défaut et mettre à jour les likes totaux
         trierGalerie('date');
         updateTotalLikes();
 
@@ -138,7 +136,7 @@ export async function chargerMedias(photographerId, cheminDossierImages) {
     }
 }
 
-// Fonction pour trier la galerie
+// Fonction pour trier les médias selon l'option choisie
 export function trierGalerie(triOption) {
     switch (triOption) {
         case 'popularite':
@@ -156,7 +154,7 @@ export function trierGalerie(triOption) {
     updateGallery(images);
 }
 
-// Fonction pour mettre à jour la galerie avec les images triées
+// Fonction pour mettre à jour la galerie avec les médias triés
 function updateGallery(sortedImages) {
     const galerie = document.getElementById('imageGallery');
     const containers = Array.from(galerie.children);
@@ -171,7 +169,7 @@ function updateGallery(sortedImages) {
     });
 }
 
-// Fonction pour mettre à jour le total des likes affiché dans l'aside
+// Fonction pour mettre à jour les likes totaux dans l'aside
 function updateTotalLikes() {
     const totalLikeInfo = document.querySelector('.total-likes');
     if (totalLikeInfo) {
@@ -179,7 +177,7 @@ function updateTotalLikes() {
     }
 }
 
-// Fonction pour récupérer les images (utilisée dans photographer.js)
+// Fonction pour obtenir les images actuelles
 export function getImages() {
     return images;
 }
