@@ -1,64 +1,64 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <link href="css/photographer.css" rel="stylesheet"/>
-    <meta charset="utf-8">
-    <link rel="icon" type="image/png" href="assets/favicon.png">
+    <link href="css/photographer.css" rel="stylesheet" type="text/css"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link rel="icon" type="image/png" href="assets/favicon.png"/>
     <title>Fisheye - photographe</title>
-    <link rel="stylesheet" type="text/css" href="/css/lightbox.css">
+    <link rel="stylesheet" type="text/css" href="/css/lightbox.css"/>
 </head>
 <body>
     <header>
-        <a href="index.html"><img src="assets/images/logo.png" class="logo" title="Retour à l'accueil" /><span class="invisible">Retour à l'accueil</span></a>
+        <a href="index.html"><img src="assets/images/logo.png" class="logo" alt="Logo de Fisheye" title="Retour à l'accueil"/><span class="invisible">Retour à l'accueil</span></a>
     </header>
     <main id="main">
         <div class="photograph-header">
-            <button class="contact_button" onclick="displayModal()">Contactez-moi</button>
+            <button class="contact_button" aria-label="Contactez-moi">Contactez-moi</button>
         </div>
         <div class="filtre">
             <label for="tri">Trier par : </label>
-            <select id="tri" name="tri">
+            <select id="tri" name="tri" aria-label="Trier les photos">
                 <option value="popularite">Popularité</option>
                 <option value="date">Date</option>
                 <option value="titre">Titre</option>
             </select>
         </div>
-        <div class="gallery" id="imageGallery"></div>
-        <aside class="asideInfos"></aside>
+        <div class="gallery" id="imageGallery" role="region" aria-label="Galerie de photos et vidéos"></div>
+        <aside class="asideInfos" aria-live="polite"></aside>
     </main>
 
-    <div id="customLightbox">
-        <img class="prev" src="assets/icons/prev.png">
+    <div id="customLightbox" role="dialog" aria-modal="true" aria-labelledby="lightboxContent">
+        <button class="prev" title="Précédent" aria-label="Média précédent"><img src="assets/icons/prev.png" alt="Précédent"/></button>
         <div id="lightboxContent">
-            <img id="lightboxImg">
-            <video id="lightboxVideo" controls></video>
+            <img id="lightboxImg" alt=""/>
+            <video id="lightboxVideo" controls="controls" aria-label="Lecteur vidéo"></video>
         </div>
-        <img class="next" src="assets/icons/next.png">
-        <img src="assets/icons/close.png" class="close">
+        <button class="next" title="Suivant" aria-label="Média suivant"><img src="assets/icons/next.png" alt="Suivant"/></button>
+        <button class="close" title="Fermer" aria-label="Fermer la lightbox"><img src="assets/icons/close.png" alt="Fermer"/></button>
     </div>
 
-    <div id="contact_modal">
+    <div id="contact_modal" role="dialog" aria-modal="true" aria-labelledby="contact_modal_title">
         <div class="modal">
             <header>
-                <h2>Contactez-moi</h2>
-                <img class="close-modal" src="assets/icons/close.svg" onclick="closeModal()" />
+                <h2 id="contact_modal_title">Contactez-moi</h2>
+                <button class="close-modal" title="Fermer" aria-label="Fermer le formulaire de contact"><img src="assets/icons/close.svg" alt="Fermer"/></button>
             </header>
             <form id="formulaire" action="photographer.html" method="get">
                 <div>
-                    <label>Prénom</label>
-                    <input type="text" name="prenom" id="prenom" aria-labelledby="prenom" aria-describedby="prenom" placeholder="Votre prénom">
+                    <label for="prenom">Prénom</label>
+                    <input type="text" name="prenom" id="prenom" placeholder="Votre prénom"/>
                 </div>
                 <div>
-                    <label>Nom</label>
-                    <input type="text" name="nom" id="nom" aria-labelledby="nom" aria-describedby="nom" placeholder="Votre nom">
+                    <label for="nom">Nom</label>
+                    <input type="text" name="nom" id="nom" placeholder="Votre nom"/>
                 </div>
                 <div>
-                    <label>Email</label>
-                    <input type="email" name="email" id="email" aria-labelledby="email" aria-describedby="email" placeholder="Votre email">
+                    <label for="email">Email</label>
+                    <input type="email" name="email" id="email" placeholder="Votre email"/>
                 </div>
                 <div>
-                    <label>Votre message</label>
-                    <textarea name="message" id="msg" aria-labelledby="message" aria-describedby="message" placeholder="Votre Message"></textarea>
+                    <label for="msg">Votre message</label>
+                    <textarea name="message" id="msg" placeholder="Votre Message"></textarea>
                 </div>
                 <button type="submit" class="envoiForm">Envoyer</button>
             </form>
@@ -66,5 +66,6 @@
     </div>
 
     <script type="module" src="/scripts/pages/photographer.js"></script>
+    <script type="module" src="scripts/utils/contactForm.js"></script>
 </body>
 </html>

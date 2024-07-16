@@ -1,64 +1,73 @@
-function displayModal() {
+// contactForm.js
+
+export function displayModal() {
     const modal = document.getElementById("contact_modal");
-	modal.style.display = "block";
+    modal.style.display = "block";
+    modal.setAttribute('aria-hidden', 'false');
+    modal.querySelector('input, button, textarea').focus();
 }
 
-function closeModal() {
+export function closeModal() {
     const modal = document.getElementById("contact_modal");
     modal.style.display = "none";
+    modal.setAttribute('aria-hidden', 'true');
+    document.querySelector('.contact_button').focus();
 }
 
+document.addEventListener('DOMContentLoaded', () => {
+    const openModalButton = document.querySelector('.contact_button');
+    const closeModalButton = document.querySelector('.close-modal');
+    const modal = document.getElementById("contact_modal");
 
-const openModal = document.querySelector('.contact_button');
-const modal = document.querySelector('.modal');
-const closeModalButton = document.querySelector('.close-modal');
+    openModalButton.addEventListener('click', (event) => {
+        event.preventDefault();
+        displayModal();
+    });
 
-openModal.addEventListener('click', () => {
-    modal.style.display = 'block';
-    modal.querySelector('input, button, textarea').focus();
-});
+    openModalButton.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            displayModal();
+        }
+    });
 
-openModal.addEventListener('keydown', (event) => {
-    if (event.key === 'Enter' || event.key === ' ') {
-        modal.style.display = 'block';
-        modal.querySelector('input, button, textarea').focus();
-    }
-});
-
-closeModalButton.addEventListener('click', closeModal);
-closeModalButton.addEventListener('keydown', (event) => {
-    if (event.key === 'Enter' || event.key === ' ') {
+    closeModalButton.addEventListener('click', (event) => {
+        event.preventDefault();
         closeModal();
-    }
-});
+    });
 
-function closeModal() {
-    modal.style.display = 'none';
-    openModal.focus();
-}
+    closeModalButton.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            closeModal();
+        }
+    });
 
-document.addEventListener('keydown', function (event) {
-    if (event.key === 'Escape' && modal.style.display === 'block') {
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && modal.style.display === 'block') {
+            closeModal();
+        }
+    });
+
+    modal.addEventListener('click', (event) => {
+        if (event.target === modal) {
+            closeModal();
+        }
+    });
+
+    const form = document.querySelector('#formulaire');
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const prenom = document.querySelector("#prenom").value;
+        const nom = document.querySelector("#nom").value;
+        const email = document.querySelector("#email").value;
+        const msg = document.querySelector("#msg").value;
+
+        console.log(`
+        Prénom : ${prenom}
+        Nom : ${nom}
+        Email : ${email}
+        Message : ${msg}`);
         closeModal();
-    } else if (event.target === modal) {
-        closeModal();
-    }
+    });
 });
-
-const prenom = document.querySelector("#prenom");
-const nom = document.querySelector("#nom");
-const email = document.querySelector("#email");
-const msg = document.querySelector("#msg");
-const form = document.querySelector('#formulaire');
-
-form.addEventListener('submit', finForm);
-
-function finForm(e) {
-    e.preventDefault();
-    console.log(`
-    Prénom : ${prenom.value}
-    Nom : ${nom.value}
-    Email : ${email.value}
-    Message : ${msg.value}`);
-    modal.style.display = 'none';
-}

@@ -53,8 +53,10 @@
     cursor: pointer;
     position: relative;
     top: -40%;
-    right: 8%;
+    right: 45px;
     max-height: 10vh;
+    background: none;
+    border: none;
 }
 
 #customLightbox {
@@ -87,14 +89,16 @@
 
 .next {
     cursor: pointer;
-    padding: 100px 100px 100px 0px;
     max-height: 10vh;
+    background: none;
+    border: none;
 }
 
 .prev {
     cursor: pointer;
-    padding: 100px 0px 100px 100px;
     max-height: 10vh;
+    background: none;
+    border: none;
 }
 
 .lightbox-title {
