@@ -47,6 +47,7 @@ export function openLightbox(mediaUrl, mediaList, isVideo = false) {
     // Gérer les boutons de navigation et de fermeture
     const nextBtn = document.querySelector('.next');
     nextBtn.tabIndex = 0;
+    document.querySelector('.next').focus();
     const prevBtn = document.querySelector('.prev');
     prevBtn.tabIndex = 0;
     const closeBtn = document.querySelector('.close');

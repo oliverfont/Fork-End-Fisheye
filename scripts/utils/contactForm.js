@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
         Email : ${email}
         Message : ${msg}`);
         
-        form.reset(); // Réinitialiser le formulaire après soumission
+        form.reset();
         closeModal();
     });
 });
